@@ -43,7 +43,7 @@ chmod +x ./setup.sh
 video. Essential for identifying and tracking the presence of players and other 
 entities on the field.
 
-  
+```bash
   uv run main.py --source_video_path data/2e57b9_0.mp4 \
   --target_video_path data/2e57b9_0-player-detection.mp4 \
   --device mps --mode PLAYER_DETECTION
@@ -54,7 +54,7 @@ entities on the field.
 - `BALL_DETECTION` - Detects the ball in the video frames and tracks its position. 
 Useful for following ball movements throughout the match.
 
-
+```bash
   uv run main.py --source_video_path data/2e57b9_0.mp4 \
   --target_video_path data/2e57b9_0-ball-detection.mp4 \
   --device cpu --mode BALL_DETECTION
@@ -65,7 +65,7 @@ Useful for following ball movements throughout the match.
 - `PITCH_DETECTION` - Detects the soccer field boundaries and key points in the video. 
 Useful for identifying and visualizing the layout of the soccer pitch.
 
-  
+```bash  
   uv run main.py --source_video_path data/2e57b9_0.mp4 \
   --target_video_path data/2e57b9_0-pitch-detection.mp4 \
   --device gpu --mode PITCH_DETECTION
@@ -75,7 +75,7 @@ Useful for identifying and visualizing the layout of the soccer pitch.
 identification. Useful for following player movements and positions throughout the 
 match.
 
-  
+```bash  
   uv run main.py --source_video_path data/2e57b9_0.mp4 \
   --target_video_path data/2e57b9_0-player-tracking.mp4 \
   --device gpu --mode PLAYER_TRACKING
@@ -87,7 +87,7 @@ match.
 on their visual features. Helps differentiate between players of different teams for 
 analysis and visualization.
 
-  
+```bash  
   uv run main.py --source_video_path data/2e57b9_0.mp4 \
   --target_video_path data/2e57b9_0-team-classification.mp4 \
   --device gpu --mode TEAM_CLASSIFICATION

@@ -21,3 +21,4 @@ gdown -O "$DIR/data/2e57b9_0.mp4" "https://drive.google.com/uc?id=19PGw55V8aA6GZ
 gdown -O "$DIR/data/08fd33_0.mp4" "https://drive.google.com/uc?id=1OG8K6wqUw9t7lp9ms1M48DxRhwTYciK-"
 gdown -O "$DIR/data/573e61_0.mp4" "https://drive.google.com/uc?id=1yYPKuXbHsCxqjA9G-S6aeR2Kcnos8RPU"
 gdown -O "$DIR/data/121364_0.mp4" "https://drive.google.com/uc?id=1vVwjW1dE1drIdd4ZSILfbCGPD4weoNiu"
+gdown -O "$DIR/data/test_bra_ger.mp4" "https://drive.google.com/uc?id=10o7wjWJ1w7j-yhoOCu9Au4Soekfau4Oy"

@@ -7,7 +7,7 @@ from typing import Any, Iterator, List, Optional
 import numpy as np
 import supervision as sv
 from tqdm import tqdm
-
+import pytesseract
 from config.config import CONFIG, COLORS
 from ViewTransform.view_tranform import ViewTransformer
 from pitch_annotator.soccer import draw_pitch, draw_points_with_labels_on_pitch

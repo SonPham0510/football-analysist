@@ -9,7 +9,6 @@ import pytesseract
 import supervision as sv
 from tqdm import tqdm
 from ultralytics import YOLO
-
 from Team.team import TeamClassifier
 from config.config import (
     BOX_ANNOTATOR,
@@ -19,7 +18,6 @@ from config.config import (
     STRIDE
 )
 from utils.utils import get_crops, validate_video_path
-
 # Configure logger
 logger = logging.getLogger(__name__)
 
