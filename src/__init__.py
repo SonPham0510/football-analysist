@@ -5,4 +5,3 @@ from .team_classfication import run_team_classification
 from .jersey_number import run_jersey_detection
 from .pitch_detection import run_pitch_detection
 from .radar import run_radar
-from .possession_ball import run_possession_tracking

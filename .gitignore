@@ -1,1 +1,9 @@
+# Project environment files
 .env
+.venv
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data directories
+/data/

@@ -11,11 +11,10 @@ from pitch_annotator.soccer import SoccerPitchConfiguration
 
 
 ####MODEL PATHS####
-PARENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PLAYER_DETECTION_MODEL_PATH = os.path.join(PARENT_DIR, 'data/football-player-detection.pt')
-PITCH_DETECTION_MODEL_PATH = os.path.join(PARENT_DIR, 'data/football-pitch-detection.pt')
-BALL_DETECTION_MODEL_PATH = os.path.join(PARENT_DIR, 'data/football-ball-detection-v2.pt')
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PLAYER_DETECTION_MODEL_PATH = os.path.join(BASE_DIR, 'data', 'football-player-detection.pt')
+BALL_DETECTION_MODEL_PATH = os.path.join(BASE_DIR, 'data', 'football-ball-detection.pt')
+PITCH_DETECTION_MODEL_PATH = os.path.join(BASE_DIR, 'data', 'football-pitch-detection.pt')
 
 
 
