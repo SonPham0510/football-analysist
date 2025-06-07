@@ -1,4 +1,5 @@
 from typing import Tuple
+
 import cv2
 import numpy as np
 import numpy.typing as npt
@@ -6,9 +7,7 @@ import numpy.typing as npt
 
 class ViewTransformer:
     def __init__(
-            self,
-            source: npt.NDArray[np.float32],
-            target: npt.NDArray[np.float32]
+        self, source: npt.NDArray[np.float32], target: npt.NDArray[np.float32]
     ) -> None:
         """
         Initialize the ViewTransformer with source and target points.
@@ -33,8 +32,7 @@ class ViewTransformer:
             raise ValueError("Homography matrix could not be calculated.")
 
     def transform_points(
-            self,
-            points: npt.NDArray[np.float32]
+        self, points: npt.NDArray[np.float32]
     ) -> npt.NDArray[np.float32]:
         """
         Transform the given points using the homography matrix.
@@ -59,9 +57,7 @@ class ViewTransformer:
         return transformed_points.reshape(-1, 2).astype(np.float32)
 
     def transform_image(
-            self,
-            image: npt.NDArray[np.uint8],
-            resolution_wh: Tuple[int, int]
+        self, image: npt.NDArray[np.uint8], resolution_wh: Tuple[int, int]
     ) -> npt.NDArray[np.uint8]:
         """
         Transform the given image using the homography matrix.

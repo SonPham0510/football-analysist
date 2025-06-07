@@ -9,5 +9,5 @@ setup(
     long_description="A project for analyzing football videos using deep learning techniques.",
     packages=find_packages(),
     
-    python_requires =">=3.9",
+    python_requires =">=3.11",
 )

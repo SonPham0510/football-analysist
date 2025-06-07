@@ -9,7 +9,7 @@ from ultralytics import YOLO
 from config.config import (
     ELLIPSE_ANNOTATOR,
     ELLIPSE_LABEL_ANNOTATOR,
-    PLAYER_DETECTION_MODEL_PATH
+    PLAYER_DETECTION_MODEL_PATH,
 )
 from utils.utils import validate_video_path
 

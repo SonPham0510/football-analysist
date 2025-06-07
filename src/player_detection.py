@@ -1,15 +1,15 @@
 import logging
 from pathlib import Path
-from typing import Iterator, List, Dict, Any, Optional, Union, Tuple
+from typing import Iterator, Union
 
 import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
 from config.config import (
-    PLAYER_DETECTION_MODEL_PATH,
     BOX_ANNOTATOR,
-    BOX_LABEL_ANNOTATOR
+    BOX_LABEL_ANNOTATOR,
+    PLAYER_DETECTION_MODEL_PATH,
 )
 from utils.utils import validate_video_path
 

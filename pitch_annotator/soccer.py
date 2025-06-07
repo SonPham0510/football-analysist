@@ -1,10 +1,9 @@
-from typing import Optional, List, Tuple, Dict
 from dataclasses import dataclass, field
+from typing import List, Optional, Tuple
 
 import cv2
-import supervision as sv
 import numpy as np
-
+import supervision as sv
 
 
 @dataclass
@@ -40,28 +39,28 @@ class SoccerPitchConfiguration:
             (self.length / 2, self.width),  # 17
             (
                 self.length - self.penalty_box_length,
-                (self.width - self.penalty_box_width) / 2
+                (self.width - self.penalty_box_width) / 2,
             ),  # 18
             (
                 self.length - self.penalty_box_length,
-                (self.width - self.goal_box_width) / 2
+                (self.width - self.goal_box_width) / 2,
             ),  # 19
             (
                 self.length - self.penalty_box_length,
-                (self.width + self.goal_box_width) / 2
+                (self.width + self.goal_box_width) / 2,
             ),  # 20
             (
                 self.length - self.penalty_box_length,
-                (self.width + self.penalty_box_width) / 2
+                (self.width + self.penalty_box_width) / 2,
             ),  # 21
             (self.length - self.penalty_spot_distance, self.width / 2),  # 22
             (
                 self.length - self.goal_box_length,
-                (self.width - self.goal_box_width) / 2
+                (self.width - self.goal_box_width) / 2,
             ),  # 23
             (
                 self.length - self.goal_box_length,
-                (self.width + self.goal_box_width) / 2
+                (self.width + self.goal_box_width) / 2,
             ),  # 24
             (self.length, 0),  # 25
             (self.length, (self.width - self.penalty_box_width) / 2),  # 26
@@ -73,30 +72,118 @@ class SoccerPitchConfiguration:
             (self.length / 2 + self.centre_circle_radius, self.width / 2),  # 32
         ]
 
-    edges: List[Tuple[int, int]] = field(default_factory=lambda: [
-        (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (7, 8),
-        (10, 11), (11, 12), (12, 13), (14, 15), (15, 16),
-        (16, 17), (18, 19), (19, 20), (20, 21), (23, 24),
-        (25, 26), (26, 27), (27, 28), (28, 29), (29, 30),
-        (1, 14), (2, 10), (3, 7), (4, 8), (5, 13), (6, 17),
-        (14, 25), (18, 26), (23, 27), (24, 28), (21, 29), (17, 30)
-    ])
+    edges: List[Tuple[int, int]] = field(
+        default_factory=lambda: [
+            (1, 2),
+            (2, 3),
+            (3, 4),
+            (4, 5),
+            (5, 6),
+            (7, 8),
+            (10, 11),
+            (11, 12),
+            (12, 13),
+            (14, 15),
+            (15, 16),
+            (16, 17),
+            (18, 19),
+            (19, 20),
+            (20, 21),
+            (23, 24),
+            (25, 26),
+            (26, 27),
+            (27, 28),
+            (28, 29),
+            (29, 30),
+            (1, 14),
+            (2, 10),
+            (3, 7),
+            (4, 8),
+            (5, 13),
+            (6, 17),
+            (14, 25),
+            (18, 26),
+            (23, 27),
+            (24, 28),
+            (21, 29),
+            (17, 30),
+        ]
+    )
 
-    labels: List[str] = field(default_factory=lambda: [
-        "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
-        "11", "12", "13", "15", "16", "17", "18", "20", "21", "22",
-        "23", "24", "25", "26", "27", "28", "29", "30", "31", "32",
-        "14", "19"
-    ])
+    labels: List[str] = field(
+        default_factory=lambda: [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+            "13",
+            "15",
+            "16",
+            "17",
+            "18",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "14",
+            "19",
+        ]
+    )
 
-    colors: List[str] = field(default_factory=lambda: [
-        "#FF1493", "#FF1493", "#FF1493", "#FF1493", "#FF1493", "#FF1493",
-        "#FF1493", "#FF1493", "#FF1493", "#FF1493", "#FF1493", "#FF1493",
-        "#FF1493", "#00BFFF", "#00BFFF", "#00BFFF", "#00BFFF", "#FF6347",
-        "#FF6347", "#FF6347", "#FF6347", "#FF6347", "#FF6347", "#FF6347",
-        "#FF6347", "#FF6347", "#FF6347", "#FF6347", "#FF6347", "#FF6347",
-        "#00BFFF", "#00BFFF"
-    ])
+    colors: List[str] = field(
+        default_factory=lambda: [
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#FF1493",
+            "#00BFFF",
+            "#00BFFF",
+            "#00BFFF",
+            "#00BFFF",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#FF6347",
+            "#00BFFF",
+            "#00BFFF",
+        ]
+    )
+
 
 def draw_pitch(
     config: SoccerPitchConfiguration,
@@ -105,7 +192,7 @@ def draw_pitch(
     padding: int = 50,
     line_thickness: int = 4,
     point_radius: int = 8,
-    scale: float = 0.1
+    scale: float = 0.1,
 ) -> np.ndarray:
     """
     Draws a soccer pitch with specified dimensions, colors, and scale.
@@ -135,45 +222,41 @@ def draw_pitch(
     scaled_penalty_spot_distance = int(config.penalty_spot_distance * scale)
 
     pitch_image = np.ones(
-        (scaled_width + 2 * padding,
-         scaled_length + 2 * padding, 3),
-        dtype=np.uint8
+        (scaled_width + 2 * padding, scaled_length + 2 * padding, 3), dtype=np.uint8
     ) * np.array(background_color.as_bgr(), dtype=np.uint8)
 
     for start, end in config.edges:
-        point1 = (int(config.vertices[start - 1][0] * scale) + padding,
-                  int(config.vertices[start - 1][1] * scale) + padding)
-        point2 = (int(config.vertices[end - 1][0] * scale) + padding,
-                  int(config.vertices[end - 1][1] * scale) + padding)
+        point1 = (
+            int(config.vertices[start - 1][0] * scale) + padding,
+            int(config.vertices[start - 1][1] * scale) + padding,
+        )
+        point2 = (
+            int(config.vertices[end - 1][0] * scale) + padding,
+            int(config.vertices[end - 1][1] * scale) + padding,
+        )
         cv2.line(
             img=pitch_image,
             pt1=point1,
             pt2=point2,
             color=line_color.as_bgr(),
-            thickness=line_thickness
+            thickness=line_thickness,
         )
 
-    centre_circle_center = (
-        scaled_length // 2 + padding,
-        scaled_width // 2 + padding
-    )
+    centre_circle_center = (scaled_length // 2 + padding, scaled_width // 2 + padding)
     cv2.circle(
         img=pitch_image,
         center=centre_circle_center,
         radius=scaled_circle_radius,
         color=line_color.as_bgr(),
-        thickness=line_thickness
+        thickness=line_thickness,
     )
 
     penalty_spots = [
-        (
-            scaled_penalty_spot_distance + padding,
-            scaled_width // 2 + padding
-        ),
+        (scaled_penalty_spot_distance + padding, scaled_width // 2 + padding),
         (
             scaled_length - scaled_penalty_spot_distance + padding,
-            scaled_width // 2 + padding
-        )
+            scaled_width // 2 + padding,
+        ),
     ]
     for spot in penalty_spots:
         cv2.circle(
@@ -181,7 +264,7 @@ def draw_pitch(
             center=spot,
             radius=point_radius,
             color=line_color.as_bgr(),
-            thickness=-1
+            thickness=-1,
         )
 
     return pitch_image
@@ -197,7 +280,7 @@ def draw_points_with_labels_on_pitch(
     padding: int = 50,
     scale: float = 0.1,
     pitch: Optional[np.ndarray] = None,
-    labels: Optional[List[str]] = None
+    labels: Optional[List[str]] = None,
 ) -> np.ndarray:
     """
     Draws points on a soccer pitch and optionally annotates them with labels.
@@ -227,30 +310,26 @@ def draw_points_with_labels_on_pitch(
         np.ndarray: Image of the soccer pitch with points and annotations.
     """
     if pitch is None:
-        pitch = draw_pitch(
-            config=config,
-            padding=padding,
-            scale=scale
-        )
+        pitch = draw_pitch(config=config, padding=padding, scale=scale)
 
     for idx, point in enumerate(xy):
         scaled_point = (
             int(point[0] * scale) + padding,
-            int(point[1] * scale) + padding
+            int(point[1] * scale) + padding,
         )
         cv2.circle(
             img=pitch,
             center=scaled_point,
             radius=radius,
             color=face_color.as_bgr(),
-            thickness=-1
+            thickness=-1,
         )
         cv2.circle(
             img=pitch,
             center=scaled_point,
             radius=radius,
             color=edge_color.as_bgr(),
-            thickness=thickness
+            thickness=thickness,
         )
 
         if labels and idx < len(labels):
@@ -263,7 +342,7 @@ def draw_points_with_labels_on_pitch(
                 0.8,
                 (255, 255, 255),  # White text
                 thickness=2,
-                lineType=cv2.LINE_AA
+                lineType=cv2.LINE_AA,
             )
 
     return pitch
@@ -278,7 +357,7 @@ def draw_points_on_pitch(
     thickness: int = 2,
     padding: int = 50,
     scale: float = 0.1,
-    pitch: Optional[np.ndarray] = None
+    pitch: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """
     Draws points on a soccer pitch.
@@ -307,30 +386,26 @@ def draw_points_on_pitch(
         np.ndarray: Image of the soccer pitch with points drawn on it.
     """
     if pitch is None:
-        pitch = draw_pitch(
-            config=config,
-            padding=padding,
-            scale=scale
-        )
+        pitch = draw_pitch(config=config, padding=padding, scale=scale)
 
     for point in xy:
         scaled_point = (
             int(point[0] * scale) + padding,
-            int(point[1] * scale) + padding
+            int(point[1] * scale) + padding,
         )
         cv2.circle(
             img=pitch,
             center=scaled_point,
             radius=radius,
             color=face_color.as_bgr(),
-            thickness=-1
+            thickness=-1,
         )
         cv2.circle(
             img=pitch,
             center=scaled_point,
             radius=radius,
             color=edge_color.as_bgr(),
-            thickness=thickness
+            thickness=thickness,
         )
 
     return pitch
@@ -343,7 +418,7 @@ def draw_paths_on_pitch(
     thickness: int = 2,
     padding: int = 50,
     scale: float = 0.1,
-    pitch: Optional[np.ndarray] = None
+    pitch: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """
     Draws paths on a soccer pitch.
@@ -368,19 +443,13 @@ def draw_paths_on_pitch(
         np.ndarray: Image of the soccer pitch with paths drawn on it.
     """
     if pitch is None:
-        pitch = draw_pitch(
-            config=config,
-            padding=padding,
-            scale=scale
-        )
+        pitch = draw_pitch(config=config, padding=padding, scale=scale)
 
     for path in paths:
         scaled_path = [
-            (
-                int(point[0] * scale) + padding,
-                int(point[1] * scale) + padding
-            )
-            for point in path if point.size > 0
+            (int(point[0] * scale) + padding, int(point[1] * scale) + padding)
+            for point in path
+            if point.size > 0
         ]
 
         if len(scaled_path) < 2:
@@ -392,7 +461,7 @@ def draw_paths_on_pitch(
                 pt1=scaled_path[i],
                 pt2=scaled_path[i + 1],
                 color=color.as_bgr(),
-                thickness=thickness
+                thickness=thickness,
             )
 
         return pitch
@@ -407,7 +476,7 @@ def draw_pitch_voronoi_diagram(
     opacity: float = 0.5,
     padding: int = 50,
     scale: float = 0.1,
-    pitch: Optional[np.ndarray] = None
+    pitch: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """
     Draws a Voronoi diagram on a soccer pitch representing the control areas of two
@@ -437,11 +506,7 @@ def draw_pitch_voronoi_diagram(
         np.ndarray: Image of the soccer pitch with the Voronoi diagram overlay.
     """
     if pitch is None:
-        pitch = draw_pitch(
-            config=config,
-            padding=padding,
-            scale=scale
-        )
+        pitch = draw_pitch(config=config, padding=padding, scale=scale)
 
     scaled_width = int(config.width * scale)
     scaled_length = int(config.length * scale)
@@ -451,17 +516,18 @@ def draw_pitch_voronoi_diagram(
     team_1_color_bgr = np.array(team_1_color.as_bgr(), dtype=np.uint8)
     team_2_color_bgr = np.array(team_2_color.as_bgr(), dtype=np.uint8)
 
-    y_coordinates, x_coordinates = np.indices((
-        scaled_width + 2 * padding,
-        scaled_length + 2 * padding
-    ))
+    y_coordinates, x_coordinates = np.indices(
+        (scaled_width + 2 * padding, scaled_length + 2 * padding)
+    )
 
     y_coordinates -= padding
     x_coordinates -= padding
 
     def calculate_distances(xy, x_coordinates, y_coordinates):
-        return np.sqrt((xy[:, 0][:, None, None] * scale - x_coordinates) ** 2 +
-                       (xy[:, 1][:, None, None] * scale - y_coordinates) ** 2)
+        return np.sqrt(
+            (xy[:, 0][:, None, None] * scale - x_coordinates) ** 2
+            + (xy[:, 1][:, None, None] * scale - y_coordinates) ** 2
+        )
 
     distances_team_1 = calculate_distances(team_1_xy, x_coordinates, y_coordinates)
     distances_team_2 = calculate_distances(team_2_xy, x_coordinates, y_coordinates)

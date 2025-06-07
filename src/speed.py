@@ -1,7 +1,9 @@
-import numpy as np
 from typing import List
 
-def estimate_speed(position_history:List, frame_rate:float) -> float:
+import numpy as np
+
+
+def estimate_speed(position_history: List, frame_rate: float) -> float:
     """
     Estimate the speed of a player given their position history.
     :param position_history: List of (x, y) positions.
