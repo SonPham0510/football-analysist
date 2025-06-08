@@ -45,7 +45,7 @@ def create_batches(
 class TeamClassifier:
     """
     A classifier that uses a pre-trained SiglipVisionModel for feature extraction,
-    UMAP for dimensionality reduction, and KMeans for clustering.
+    PCA for dimensionality reduction, and KMeans for clustering.
     """
 
     def __init__(self, device: str = "cpu", batch_size: int = 32, n_cluster: int = 2):

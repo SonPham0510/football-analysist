@@ -59,6 +59,8 @@ class TeamClassificationProcessor:
         )
         self.team_classifier = TeamClassifier(device=self.device)
 
+        self.track_team_votes = {}
+
     def collect_player_crops(self, source_video_path: str) -> List[np.ndarray]:
         """
         Collect player crops for team classification fitting.
@@ -118,6 +120,19 @@ class TeamClassificationProcessor:
         players = detections[detections.class_id == PLAYER_CLASS_ID]
         crops = get_crops(frame, players)
         players_team_id = self.team_classifier.predict(crops) if crops else np.array([])
+
+        # Stabilize team labels using tracker IDs
+        if len(players_team_id) > 0:
+            stable_ids = []
+            for tracker_id, team_id in zip(players.tracker_id, players_team_id):
+                votes = self.track_team_votes.get(
+                    tracker_id,
+                    np.zeros(self.team_classifier.n_cluster, dtype=int),
+                )
+                votes[team_id] += 1
+                self.track_team_votes[tracker_id] = votes
+                stable_ids.append(int(np.argmax(votes)))
+            players_team_id = np.array(stable_ids)
 
         # Handle goalkeepers
         goalkeepers = detections[detections.class_id == GOALKEEPER_CLASS_ID]
