@@ -2,11 +2,11 @@
 import argparse
 import logging
 from enum import Enum
-from typing import Iterator, Optional
+from typing import  Optional
 
 
-import numpy as np
-import supervision as sv
+
+
 
 # Local imports
 from utils.utils import save_video
