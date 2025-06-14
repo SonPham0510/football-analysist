@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 
 from typing import Iterator, List, Optional, Tuple
-
+from paddleocr import PaddleOCR
 import cv2
 import numpy as np
 import pytesseract
@@ -31,6 +31,7 @@ from src.speed import estimate_speed
 from Team.team import TeamClassifier
 from utils.utils import create_radar_frame, euclidean_distance, get_crops
 from ViewTransform.view_tranform import ViewTransformer
+from src.jersey_number import JerseyNumberDetector
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -110,6 +111,12 @@ class RadarView:
         )
         self.ball_tracker = BallTracker(buffer_size=self.ball_buffer_size)
         self.team_classifier = TeamClassifier(device=self.device)
+        self.jersey_detector = JerseyNumberDetector(
+            model_path=self.player_model_path,
+            device=self.device,
+            jersey_number_threshold=JERSEY_NUMBER_THRESHOLD,
+            use_gpu=self.device,
+        )
 
     def fit_team_classifier(self, source_video_path: str) -> None:
         """
@@ -163,7 +170,7 @@ class RadarView:
         return keypoints, transformer
 
     def _detect_and_track_players(
-        self, frame: np.ndarray
+        self, frame: np.ndarray,detections: sv.Detections
     ) -> Tuple[sv.Detections, np.ndarray, List[str]]:
         """
         Detect and track players, assigning team IDs and jersey numbers.
@@ -177,10 +184,7 @@ class RadarView:
                 - team IDs
                 - jersey number labels
         """
-        # Detect players
-        result = self.player_model(frame, imgsz=1280, verbose=False)[0]
-        detections = sv.Detections.from_ultralytics(result)
-        detections = self.player_tracker.update_with_detections(detections)
+        
 
         # Filter out players
         players = detections[detections.class_id == PLAYER_CLASS_ID]
@@ -194,34 +198,16 @@ class RadarView:
         for tracker_id, team_id, crop in zip(
             players.tracker_id, players_team_id, crops
         ):
-            # Extract jersey number using OCR
-            gray_crop = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
-            _, thresh_crop = cv2.threshold(
-                gray_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+            jersey_number = self.jersey_detector.recognize_jersey_number(crop)
+            assigned = self.jersey_detector.update_jersey_tracking(
+                tracker_id, team_id, jersey_number
             )
-            jersey_number = pytesseract.image_to_string(
-                thresh_crop, config="--psm 7 -c tessedit_char_whitelist=0123456789"
-            ).strip()
 
-            # Update jersey number history
-            counts = self.jersey_numbers_history[tracker_id]
-            counts[jersey_number] += 1
+            labels.append(assigned)
+         # Store assignments
 
-            # Check if any jersey number has reached the threshold
-            for number, count in counts.items():
-                if count >= JERSEY_NUMBER_THRESHOLD and number.isdigit():
-                    # Only assign if not already assigned to another player
-                    team_numbers = self.assigned_jersey_numbers[team_id]
-                    if number not in team_numbers.values():
-                        self.assigned_jersey_numbers[team_id][tracker_id] = number
-                        break
-
-            # Create label
-            if tracker_id in self.assigned_jersey_numbers[team_id]:
-                label = self.assigned_jersey_numbers[team_id][tracker_id]
-            else:
-                label = ""
-            labels.append(label)
+        self.jersey_numbers_history = self.jersey_detector.jersey_numbers_history
+        self.assigned_jersey_numbers = self.jersey_detector.assigned_jersey_numbers
 
         return players, players_team_id, labels
 
@@ -490,12 +476,7 @@ class RadarView:
             "referees": [
                 {"position": list(pos)} for pos in transformed_referees_positions
             ],
-            "balls": [
-                {"position": list(pos)}
-                for pos in (
-                    transformed_ball_positions / 100.0
-                )  # Scale to match player positions
-            ],
+            "balls": [{"position": list(pos)} for pos in transformed_ball_positions],
         }
 
         self.all_frames.append(frame_data)
@@ -530,15 +511,18 @@ class RadarView:
             # Detect pitch keypoints
             keypoints, transformer = self._detect_pitch_keypoints(frame)
 
-            # Detect and track players
-            players, players_team_id, player_labels = self._detect_and_track_players(
-                frame
-            )
+            
 
             # Detect goalkeepers and referees
             result = self.player_model(frame, imgsz=1280, verbose=False)[0]
             detections = sv.Detections.from_ultralytics(result)
             detections = self.player_tracker.update_with_detections(detections)
+
+              # Extract players and classify teams
+            players, players_team_id, player_labels = self._detect_and_track_players(
+                frame, detections
+            )
+            # Detect goalkeepers and referees
             goalkeepers, referees, goalkeepers_team_id = (
                 self._detect_goalkeepers_and_referees(
                     detections, players, players_team_id
@@ -572,8 +556,11 @@ class RadarView:
 
             # Detect and track ball
             ball_detections = self._detect_and_track_ball(frame)
-            transformed_ball_positions = transformer.transform_points(
-                ball_detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER)
+            transformed_ball_positions = (
+                transformer.transform_points(
+                    ball_detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER)
+                )
+                / 100.0
             )
 
             # Determine ball possession
