@@ -348,22 +348,26 @@ class RadarView:
         current_ball_possession_team = None
 
         if (
-            len(transformed_ball_positions) == 1
+            len(transformed_ball_positions) > 0
             and len(transformed_players_positions) > 0
         ):
             ball_pos = transformed_ball_positions[0]
             min_dist = float("inf")
-            closest_player_team_id = None
+            closest_player_team_id: Optional[int] = None
 
             # Find the closest player in pitch space
             for pos, team_id in zip(transformed_players_positions, players_team_id):
                 dist = euclidean_distance(ball_pos, pos)
                 if dist < min_dist:
                     min_dist = dist
-                    closest_player_team_id = team_id
+                    closest_player_team_id = int(team_id)
+
 
             # Update possession counter
-            if closest_player_team_id is not None:
+            if (
+                closest_player_team_id is not None
+                and closest_player_team_id in self.possession_counts
+            ):
                 self.possession_counts[closest_player_team_id] += 1
                 current_ball_possession_team = closest_player_team_id
 
