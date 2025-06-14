@@ -141,7 +141,7 @@ def render_radar(
     radar = draw_pitch(config=CONFIG)
 
     # Draw entities by team/color
-    for color_id in range(5):  # Handle up to 5 different colors
+    for color_id in range(5):
         # Filter detections by color
         team_mask = color_lookup == color_id
         team_xy = transformed_xy[team_mask]
