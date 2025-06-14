@@ -3,10 +3,10 @@ import logging
 from collections import defaultdict
 
 from typing import Iterator, List, Optional, Tuple
-from paddleocr import PaddleOCR
+
 import cv2
 import numpy as np
-import pytesseract
+
 import supervision as sv
 from tqdm import tqdm
 from ultralytics import YOLO
@@ -25,11 +25,16 @@ from config.config import (
     REFEREE_CLASS_ID,
     STRIDE,
 )
-
+from utils.utils import (
+    create_radar_frame,
+    euclidean_distance,
+    get_crops,
+    convert_numpy_types,
+)
 from src.player_detection import resolve_goalkeepers_team_id
 from src.speed import estimate_speed
 from Team.team import TeamClassifier
-from utils.utils import create_radar_frame, euclidean_distance, get_crops
+
 from ViewTransform.view_tranform import ViewTransformer
 from src.jersey_number import JerseyNumberDetector
 
@@ -170,7 +175,7 @@ class RadarView:
         return keypoints, transformer
 
     def _detect_and_track_players(
-        self, frame: np.ndarray,detections: sv.Detections
+        self, frame: np.ndarray, detections: sv.Detections
     ) -> Tuple[sv.Detections, np.ndarray, List[str]]:
         """
         Detect and track players, assigning team IDs and jersey numbers.
@@ -184,7 +189,6 @@ class RadarView:
                 - team IDs
                 - jersey number labels
         """
-        
 
         # Filter out players
         players = detections[detections.class_id == PLAYER_CLASS_ID]
@@ -204,7 +208,7 @@ class RadarView:
             )
 
             labels.append(assigned)
-         # Store assignments
+        # Store assignments
 
         self.jersey_numbers_history = self.jersey_detector.jersey_numbers_history
         self.assigned_jersey_numbers = self.jersey_detector.assigned_jersey_numbers
@@ -511,14 +515,12 @@ class RadarView:
             # Detect pitch keypoints
             keypoints, transformer = self._detect_pitch_keypoints(frame)
 
-            
-
             # Detect goalkeepers and referees
             result = self.player_model(frame, imgsz=1280, verbose=False)[0]
             detections = sv.Detections.from_ultralytics(result)
             detections = self.player_tracker.update_with_detections(detections)
 
-              # Extract players and classify teams
+            # Extract players and classify teams
             players, players_team_id, player_labels = self._detect_and_track_players(
                 frame, detections
             )
@@ -622,8 +624,9 @@ class RadarView:
         # Save radar data to JSON
         if json_file_path:
             logger.info(f"Saving radar data to {json_file_path}")
+            converted_frames = convert_numpy_types(self.all_frames)
             with open(json_file_path, "w") as f:
-                json.dump({"frames": self.all_frames}, f, indent=2)
+                json.dump({"frames": converted_frames}, f, indent=2)
 
 
 def run_radar(
