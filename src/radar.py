@@ -369,6 +369,7 @@ class RadarView:
                 and closest_player_team_id in self.possession_counts
             ):
                 self.possession_counts[closest_player_team_id] += 1
+                self.frames_with_ball += 1
                 current_ball_possession_team = closest_player_team_id
 
         # Annotate possession info
@@ -409,12 +410,12 @@ class RadarView:
             )
 
         # Calculate and display possession percentages
-        if self.total_frames > 0:
+        if   self.frames_with_ball > 0:
             pos_a_percent = (
-                self.possession_counts[TEAM_A_ID] / self.total_frames
+                self.possession_counts[TEAM_A_ID] / self.frames_with_ball
             ) * 100
             pos_b_percent = (
-                self.possession_counts[TEAM_B_ID] / self.total_frames
+                self.possession_counts[TEAM_B_ID] / self.frames_with_ball
             ) * 100
 
             cv2.putText(
