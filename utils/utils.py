@@ -7,7 +7,7 @@ import numpy as np
 import supervision as sv
 from tqdm import tqdm
 
-from config.config import COLORS, CONFIG
+from config.config import COLORS, CONFIG,BALL_COLOR_ID
 from pitch_annotator.soccer import draw_pitch, draw_points_with_labels_on_pitch
 from ViewTransform.view_tranform import ViewTransformer
 
@@ -156,7 +156,7 @@ def render_radar(
             config=CONFIG,
             xy=team_xy,
             face_color=sv.Color.from_hex(COLORS[color_id]),
-            radius=2 if color_id == 5 else 20,  # Smaller radius for ball
+            radius=5 if color_id == BALL_COLOR_ID else 20,  # Smaller radius for ball
             pitch=radar,
             labels=team_labels,
         )
