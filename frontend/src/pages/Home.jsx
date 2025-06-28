@@ -99,14 +99,14 @@ const Home = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="progress-bar">
+        {/* <div className="progress-bar">
           <div
             className="progress-fill"
             style={{
               width: `${((currentSlide + 1) / slides.length) * 100}%`
             }}
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Features Section */}
