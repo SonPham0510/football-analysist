@@ -63,7 +63,7 @@ Useful for following ball movements throughout the match.
 ```bash
   uv run main.py --source_video_path data/2e57b9_0.mp4 \
   --target_video_path data/2e57b9_0-ball-detection.mp4 \
-  --device cpu --mode BALL_DETECTION
+  --device cuda --mode BALL_DETECTION
 ```
 
   https://github.com/user-attachments/assets/2fd83678-7790-4f4d-a8c0-065ef38ca031
@@ -74,7 +74,7 @@ Useful for identifying and visualizing the layout of the soccer pitch.
 ```bash  
   uv run main.py --source_video_path data/2e57b9_0.mp4 \
   --target_video_path data/2e57b9_0-pitch-detection.mp4 \
-  --device gpu --mode PITCH_DETECTION
+  --device cuda --mode PITCH_DETECTION
 ```
 
 - `PLAYER_TRACKING` - Tracks players across video frames, maintaining consistent 
@@ -84,7 +84,7 @@ match.
 ```bash  
   uv run main.py --source_video_path data/2e57b9_0.mp4 \
   --target_video_path data/2e57b9_0-player-tracking.mp4 \
-  --device gpu --mode PLAYER_TRACKING
+  --device cuda --mode PLAYER_TRACKING
 ```
   
   https://github.com/user-attachments/assets/69be83ac-52ff-4879-b93d-33f016feb839
@@ -96,12 +96,53 @@ analysis and visualization.
 ```bash  
   uv run main.py --source_video_path data/2e57b9_0.mp4 \
   --target_video_path data/2e57b9_0-team-classification.mp4 \
-  --device gpu --mode TEAM_CLASSIFICATION
+  --device cuda --mode TEAM_CLASSIFICATION
 ```
 
   https://github.com/user-attachments/assets/239c2960-5032-415c-b330-3ddd094d32c7
 
+- `RADAR_CHART` - Generates a radar chart with player statistics, such as speed,
+distance covered, and other performance metrics. Useful for visualizing player
+performance in a comprehensive manner.
+
+```bash  
+  uv run main.py --source_video_path data/2e57b9_0.mp4 \
+  --target_video_path data/2e57b9_0-radar-chart.mp4 \
+  --device cuda --mode RADAR_CHART --json_path data/2e57b9_0._radar.json
+  
+```
+
+<video width="600" controls>
+  <source src="https://github.com/user-attachments/assets/2e57b9_0-radar_3.mp4" type="video/mp4">
+</video>
 
 
+## 🚀 Web Interface
 
-## 📊 Results
+A React web application is provided to upload a video and view the processed
+result. The frontend lives in the `frontend/` folder and uses Vite for
+development.
+
+### Start the backend
+
+Run the FastAPI server from the repository root:
+
+```bash
+uvicorn backend.main:app --reload
+```
+
+### Start the frontend
+
+Install the Node dependencies once and then launch the Vite development server:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The app will be available at `http://localhost:3000`. Use the form on the
+"Solution" page to upload a video and choose one or more analysis modes. Each
+mode will produce a separate processed video when the backend finishes
+processing.
+

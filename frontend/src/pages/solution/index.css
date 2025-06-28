@@ -1,0 +1,74 @@
+/* Solution Page - Dark Mode Theme */
+.solution-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0d1421, #1a202c);
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.solution-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #1a202c, #2d3748);
+    border-radius: 20px;
+    border: 1px solid #4a5568;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.solution-header h1 {
+    margin: 0 0 20px 0;
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #4fd1c7, #38b2ac);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 4px 20px rgba(79, 209, 199, 0.3);
+}
+
+.solution-description {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #a0aec0;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Legacy styles - keeping for compatibility but most are replaced by components */
+
+/* Responsive Design for Solution Page */
+@media (max-width: 768px) {
+    .solution-page {
+        padding: 15px;
+    }
+
+    .solution-header {
+        padding: 30px 15px;
+        margin-bottom: 30px;
+    }
+
+    .solution-header h1 {
+        font-size: 2.2rem;
+    }
+
+    .solution-description {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .solution-page {
+        padding: 10px;
+    }
+
+    .solution-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .solution-description {
+        font-size: 1rem;
+    }
+}

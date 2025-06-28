@@ -1,0 +1,173 @@
+/* Loading State Component - Dark Mode */
+.loading-section {
+    margin: 30px 0;
+    padding: 40px;
+    background: linear-gradient(135deg, #1a202c, #2d3748);
+    border: 2px solid #4fd1c7;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(79, 209, 199, 0.2);
+}
+
+.loading-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.loading-spinner-container {
+    margin-bottom: 25px;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    border: 4px solid #4a5568;
+    border-top: 4px solid #4fd1c7;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.loading-spinner.complete {
+    border: 4px solid #48bb78;
+    animation: none;
+    background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    font-size: 20px;
+    color: #4fd1c7;
+    margin: 20px 0;
+    font-weight: 600;
+}
+
+.loading-steps {
+    margin: 30px 0;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 20px;
+    margin: 10px 0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    color: #a0aec0;
+    background: rgba(74, 85, 104, 0.3);
+}
+
+.step.active {
+    color: #4fd1c7;
+    background: rgba(79, 209, 199, 0.1);
+    border: 1px solid rgba(79, 209, 199, 0.3);
+    transform: scale(1.02);
+}
+
+.step.completed {
+    color: #48bb78;
+    background: rgba(72, 187, 120, 0.1);
+    border: 1px solid rgba(72, 187, 120, 0.3);
+}
+
+.step-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+.step span {
+    font-weight: 500;
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #4a5568;
+    border-radius: 6px;
+    margin: 25px 0;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4fd1c7, #38b2ac);
+    border-radius: 6px;
+    transition: width 0.8s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.loading-note {
+    color: #a0aec0;
+    font-style: italic;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .loading-section {
+        padding: 25px 20px;
+        margin: 20px 0;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .loading-text {
+        font-size: 18px;
+    }
+
+    .step {
+        padding: 10px 15px;
+        gap: 10px;
+    }
+
+    .step span {
+        font-size: 14px;
+    }
+}

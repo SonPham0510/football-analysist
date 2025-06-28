@@ -1,15 +1,18 @@
 import json
 import logging
 import os
-from typing import Any, Iterator, List, Optional
+from typing import Any, Iterator, List, Optional, Dict
+from pathlib import Path
 
 import numpy as np
 import supervision as sv
 from tqdm import tqdm
 
 from config.config import COLORS, CONFIG,BALL_COLOR_ID
+from cloudinary_config import CloudinaryManager
 from pitch_annotator.soccer import draw_pitch, draw_points_with_labels_on_pitch
 from ViewTransform.view_tranform import ViewTransformer
+from cloudinary_config import CloudinaryManager
 
 # Configure logging
 logging.basicConfig(
@@ -250,8 +253,79 @@ def save_video(
         # Write frames to output video
         with sv.VideoSink(target_video_path, video_info) as sink:
             for frame in tqdm(frame_generator, desc=f"Processing {mode_name}"):
+                logger.info(f"Writing frame of shape {frame.shape} to video")
                 sink.write_frame(frame)
 
         logger.info(f"Video saved to {target_video_path}")
     except Exception as e:
         logger.error(f"Error saving video: {str(e)}")
+
+class VideoUtils:
+    @staticmethod
+    def upload_processed_video_to_cloud(local_path: str, video_name: str) -> Dict[str, Any]:
+        """
+        Upload processed video to Cloudinary and return cloud info
+        """
+        try:
+            if not os.path.exists(local_path):
+                return {"success": False, "error": "Local video file not found"}
+            
+            # Generate public_id from video name (remove extension)
+            public_id = Path(video_name).stem
+            
+            # Upload to Cloudinary
+            result = CloudinaryManager.upload_video(
+                file_path=local_path,
+                public_id=public_id,
+                folder="football_analysis"
+            )
+            
+            if result["success"]:
+                logger.info(f"Successfully uploaded {video_name} to Cloudinary")
+                return {
+                    "success": True,
+                    "cloudinary_url": result["secure_url"],
+                    "public_id": result["public_id"],
+                    "player_url": CloudinaryManager.get_player_embed_url(result["public_id"]),
+                    "direct_url": CloudinaryManager.get_video_url(result["public_id"])
+                }
+            else:
+                logger.error(f"Failed to upload {video_name}: {result['error']}")
+                return result
+                
+        except Exception as e:
+            logger.error(f"Error uploading video {video_name}: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
+    @staticmethod
+    def get_cloud_video_info(public_id: str) -> Dict[str, Any]:
+        """
+        Get video information from Cloudinary
+        """
+        try:
+            direct_url = CloudinaryManager.get_video_url(public_id)
+            player_url = CloudinaryManager.get_player_embed_url(public_id)
+            
+            return {
+                "success": True,
+                "public_id": public_id,
+                "direct_url": direct_url,
+                "player_url": player_url
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    @staticmethod
+    def cleanup_local_file(file_path: str) -> bool:
+        """
+        Remove local file after uploading to cloud
+        """
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                logger.info(f"Cleaned up local file: {file_path}")
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Error cleaning up file {file_path}: {str(e)}")
+            return False

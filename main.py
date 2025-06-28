@@ -162,6 +162,10 @@ def parse_args():
     return parser.parse_args()
 
 
+def analyse_video(*args, **kwargs) -> None:
+    """Compatibility wrapper that forwards to :func:`main`."""
+    return main(*args, **kwargs)
+
 if __name__ == '__main__':
     args = parse_args()
     main(

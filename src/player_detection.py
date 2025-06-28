@@ -68,6 +68,7 @@ class PlayerDetector:
         Returns:
             Detected players
         """
+        logger.info(f"Detecting players is running on ")
         result = self.model(
             frame, 
             imgsz=self.image_size, 
@@ -76,6 +77,7 @@ class PlayerDetector:
         )[0]
         
         detections = sv.Detections.from_ultralytics(result)
+        
         return detections
     
     def process_video(self, source_video_path: str) -> Iterator[np.ndarray]:
@@ -104,7 +106,12 @@ class PlayerDetector:
         for frame in frame_generator:
             # Detect players
             detections = self.detect_players(frame)
-            
+            logger.info(
+                f"Detected {len(detections)} players in frame of shape {frame.shape}"
+            )
+            if detections is None or len(detections) == 0:
+                logger.warning("No players detected in this frame.")
+                continue
             # Annotate frame
             annotated_frame = frame.copy()
             annotated_frame = BOX_ANNOTATOR.annotate(

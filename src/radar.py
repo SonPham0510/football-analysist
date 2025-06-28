@@ -172,6 +172,11 @@ class RadarView:
             target=np.array(CONFIG.vertices)[mask].astype(np.float32),
         )
 
+        if mask.sum() < 4:
+            logger.warning("Not enough keypoints detected, skipping frame.")
+            return None, None
+        
+
         return keypoints, transformer
 
     def _detect_and_track_players(
@@ -518,6 +523,11 @@ class RadarView:
         for frame in frame_generator:
             # Detect pitch keypoints
             keypoints, transformer = self._detect_pitch_keypoints(frame)
+
+            if transformer is None:
+                logger.warning("No pitch keypoints detected, skipping frame.")
+                continue
+
 
             # Detect goalkeepers and referees
             result = self.player_model(frame, imgsz=1280, verbose=False)[0]
