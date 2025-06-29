@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
-
+// Import local images
+import footballFieldImage from '../assets/images/football-field.jpeg';
+import soccerBackground from '../assets/images/soccer-banner.jpeg';
 const Home = () => {
   const navigate = useNavigate();
 
@@ -18,14 +20,14 @@ const Home = () => {
     },
     {
       id: 2,
-      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3",
+      image: footballFieldImage,
       title: "Tactical Analysis & Insights",
       subtitle: "Deep Football Analytics with Machine Learning",
       description: "Generate comprehensive tactical insights, team formations, and strategic patterns from video analysis"
     },
     {
       id: 3,
-      image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3",
+      image: soccerBackground,
       title: "Real-time Match Intelligence",
       subtitle: "Live Performance Metrics & Heat Maps",
       description: "Transform raw match footage into actionable intelligence with our cutting-edge AI technology"
@@ -98,45 +100,8 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Progress Bar */}
-        {/* <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{
-              width: `${((currentSlide + 1) / slides.length) * 100}%`
-            }}
-          />
-        </div> */}
+      
       </div>
-
-      {/* Features Section */}
-      <section className="features-section">
-        <div className="container">
-          <h2 className="features-title">Powered by Advanced AI Technology</h2>
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">🎯</div>
-              <h3>Player Detection</h3>
-              <p>Accurately identify and track all players in real-time using deep learning models</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">⚽</div>
-              <h3>Ball Tracking</h3>
-              <p>Precise ball detection and trajectory analysis throughout the entire match</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">📊</div>
-              <h3>Tactical Analysis</h3>
-              <p>Generate comprehensive tactical insights and team formation analysis</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🎮</div>
-              <h3>Interactive Radar</h3>
-              <p>Dynamic tactical radar view with real-time positioning and movement patterns</p>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };

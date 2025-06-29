@@ -20,12 +20,22 @@ const Solution = () => {
   const modes = [
     'PITCH_DETECTION',
     'PLAYER_DETECTION',
-    'BALL_DETECTION',
+    'BALL_TRACKING',
     'PLAYER_TRACKING',
     'TEAM_CLASSIFICATION',
     'JERSEY_DETECTION',
     'RADAR'
   ];
+
+  const modeDescriptions = {
+    'PITCH_DETECTION': 'Detect and analyze the football pitch boundaries, goal areas, and field markings',
+    'PLAYER_DETECTION': 'Identify and track all players on the field with bounding boxes',
+    'BALL_TRACKING': 'Track the football throughout the match with precise location detection',
+    'PLAYER_TRACKING': 'Follow player movements and create trajectory paths across the field',
+    'TEAM_CLASSIFICATION': 'Classify players into different teams based on jersey colors',
+    'JERSEY_DETECTION': 'Detect and read jersey numbers for player identification',
+    'RADAR': 'Generate tactical radar view showing player positions and movements'
+  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -97,8 +107,8 @@ const Solution = () => {
         setError(result.error || result.data?.message || 'Processing failed');
         setIsProcessing(false);
         setLoadingState('');
-      }
 
+      }
     } catch (err) {
       console.error('Upload failed:', err);
       setError('Upload failed. Please check the server and try again.');
@@ -110,10 +120,11 @@ const Solution = () => {
   return (
     <div className="solution-page">
       <div className="solution-header">
-        <h1>⚽ Tactical Radar Generator</h1>
-        <p className="solution-description">
-          Upload your football match video and let our AI generate detailed tactical analysis with radar visualization.
-        </p>
+        
+        <div className="mode-description">
+          <h3>📋 Selected Analysis: {selectedMode.replace('_', ' ')}</h3>
+          <p className="mode-info">{modeDescriptions[selectedMode]}</p>
+        </div>
       </div>
 
       <FileUpload

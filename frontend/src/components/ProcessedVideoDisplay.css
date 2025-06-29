@@ -16,6 +16,16 @@
     border: 2px solid #ed8936;
 }
 
+/* Additional styling for default processed-video-section (no class) */
+.processed-video-section:not(.success):not(.fallback) {
+    background: linear-gradient(135deg, #1a202c, #2d3748);
+    border: 2px solid #4fd1c7;
+}
+
+.processed-video-section:not(.success):not(.fallback) .section-header h3 {
+    color: #4fd1c7;
+}
+
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -91,6 +101,15 @@
     width: 800px;
 }
 
+/* Loading animation for video display */
+.video-display .main-player {
+    transition: opacity 0.3s ease;
+}
+
+.video-display .main-player.loading {
+    opacity: 0.7;
+}
+
 .video-actions {
     margin: 30px 0;
     padding: 25px;
@@ -141,6 +160,15 @@
     transform: translateY(-1px);
 }
 
+/* Enhanced hover effects */
+.processed-video-section {
+    transition: transform 0.2s ease;
+}
+
+.processed-video-section:hover {
+    transform: translateY(-2px);
+}
+
 .external-link {
     padding: 8px 16px;
     background: rgba(79, 209, 199, 0.1);
@@ -156,6 +184,13 @@
 .external-link:hover {
     background: rgba(79, 209, 199, 0.2);
     transform: translateY(-1px);
+}
+
+/* Better focus states for accessibility */
+.copy-btn:focus,
+.external-link:focus {
+    outline: 2px solid #4fd1c7;
+    outline-offset: 2px;
 }
 
 .video-metadata {
