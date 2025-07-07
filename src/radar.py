@@ -1,5 +1,6 @@
 import json
 import logging
+import csv
 from collections import defaultdict
 
 from typing import Iterator, List, Optional, Tuple
@@ -92,6 +93,12 @@ class RadarView:
         self.possession_counts = {TEAM_A_ID: 0, TEAM_B_ID: 0}
         self.total_frames = 0
         self.all_frames = []  # For JSON export
+        
+        # CSV data storage (new)
+        self.csv_data = []
+        self.frame_rate = 30.0  # Will be updated from video
+        self.current_phase_id = 0
+        self.last_ball_possession_player = None
 
         # Ball tracking
         self.last_ball_detections = None
@@ -282,7 +289,7 @@ class RadarView:
         players: sv.Detections,
         transformed_positions: np.ndarray,
         frame_rate: float = 30.0,
-    ) -> None:
+    ) -> dict:
         """
         Calculate and annotate player speeds.
 
@@ -291,7 +298,12 @@ class RadarView:
             players: Player detections
             transformed_positions: Transformed player positions
             frame_rate: Video frame rate
+
+        Returns:
+            Dictionary mapping player_id to speed
         """
+        player_speeds = {}
+        
         for tracker_id, position, bbox in zip(
             players.tracker_id, transformed_positions, players.xyxy
         ):
@@ -302,6 +314,7 @@ class RadarView:
 
             # Calculate speed
             speed = estimate_speed(self.position_history[tracker_id], frame_rate)
+            player_speeds[tracker_id] = speed
 
             # Annotate speed on frame
             if tracker_id is not None:
@@ -315,6 +328,8 @@ class RadarView:
                     (0, 255, 0),
                     1,
                 )
+        
+        return player_speeds
 
     def _determine_ball_possession(
         self,
@@ -478,19 +493,153 @@ class RadarView:
 
         self.all_frames.append(frame_data)
 
+    def _save_csv_data(
+        self,
+        frame_index: int,
+        players: sv.Detections,
+        goalkeepers: sv.Detections,
+        players_team_id: np.ndarray,
+        goalkeepers_team_id: np.ndarray,
+        transformed_players_positions: np.ndarray,
+        transformed_goalkeepers_positions: np.ndarray,
+        transformed_ball_positions: np.ndarray,
+        player_speeds: dict,
+    ) -> None:
+        """
+        Save frame data for CSV export with format: time,teamId,playerId,x,y,hasBall,phaseId,speed
+
+        Args:
+            frame_index: Current frame index
+            players: Player detections
+            goalkeepers: Goalkeeper detections
+            players_team_id: Team IDs for players
+            goalkeepers_team_id: Team IDs for goalkeepers
+            transformed_players_positions: Transformed player positions
+            transformed_goalkeepers_positions: Transformed goalkeeper positions
+            transformed_ball_positions: Transformed ball positions
+            player_speeds: Dictionary mapping player_id to speed
+        """
+        time_stamp = frame_index / self.frame_rate
+        
+        # Determine ball possession for each player
+        ball_pos = None
+        if len(transformed_ball_positions) > 0:
+            ball_pos = transformed_ball_positions[0]
+        
+        # Save player tracking data
+        for tracker_id, team_id, pos in zip(
+            players.tracker_id, players_team_id, transformed_players_positions
+        ):
+            has_ball = False
+            if ball_pos is not None:
+                # Check if this player is closest to the ball (within 2 meters)
+                dist = euclidean_distance(ball_pos, pos)
+                has_ball = dist < 2.0
+            
+            speed = player_speeds.get(tracker_id, 0.0)
+            
+            self.csv_data.append({
+                'time': time_stamp,
+                'teamId': int(team_id),
+                'playerId': int(tracker_id),
+                'x': float(pos[0]),
+                'y': float(pos[1]),
+                'hasBall': has_ball,
+                'phaseId': self.current_phase_id,
+                'speed': speed
+            })
+        
+        # Save goalkeeper tracking data
+        for tracker_id, team_id, pos in zip(
+            goalkeepers.tracker_id, goalkeepers_team_id, transformed_goalkeepers_positions
+        ):
+            has_ball = False
+            if ball_pos is not None:
+                dist = euclidean_distance(ball_pos, pos)
+                has_ball = dist < 2.0
+            
+            speed = player_speeds.get(tracker_id, 0.0)
+            
+            self.csv_data.append({
+                'time': time_stamp,
+                'teamId': int(team_id),
+                'playerId': int(tracker_id),
+                'x': float(pos[0]),
+                'y': float(pos[1]),
+                'hasBall': has_ball,
+                'phaseId': self.current_phase_id,
+                'speed': speed
+            })
+
+    def _write_csv_file(self, csv_file_path: str) -> None:
+        """Write CSV file with tracking data."""
+        if self.csv_data:
+            with open(csv_file_path, 'w', newline='') as f:
+                fieldnames = ['time', 'teamId', 'playerId', 'x', 'y', 'hasBall', 'phaseId', 'speed']
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(self.csv_data)
+            logger.info(f"CSV tracking data saved to {csv_file_path}")
+            logger.info(f"Total records: {len(self.csv_data)}")
+            logger.info(f"Total phases detected: {self.current_phase_id + 1}")
+
+    def _update_phase_tracking(
+        self,
+        current_ball_possession_player: Optional[int],
+        transformed_ball_positions: np.ndarray,
+        transformed_players_positions: np.ndarray,
+        players_team_id: np.ndarray,
+        players_tracker_id: np.ndarray,
+    ) -> None:
+        """
+        Update phase tracking when ball possession changes.
+
+        Args:
+            current_ball_possession_player: Current player with ball possession
+            transformed_ball_positions: Transformed ball positions
+            transformed_players_positions: Transformed player positions
+            players_team_id: Team IDs for players
+            players_tracker_id: Player tracker IDs
+        """
+        if len(transformed_ball_positions) > 0 and len(transformed_players_positions) > 0:
+            ball_pos = transformed_ball_positions[0]
+            min_dist = float("inf")
+            closest_player_id = None
+
+            # Find the closest player to the ball
+            for pos, tracker_id in zip(transformed_players_positions, players_tracker_id):
+                dist = euclidean_distance(ball_pos, pos)
+                if dist < min_dist:
+                    min_dist = dist
+                    closest_player_id = tracker_id
+
+            # Check for phase change
+            if (closest_player_id is not None and 
+                self.last_ball_possession_player is not None and 
+                self.last_ball_possession_player != closest_player_id):
+                self.current_phase_id += 1
+                logger.info(f"Phase change detected: Player {closest_player_id} now has ball (Phase {self.current_phase_id})")
+            
+            self.last_ball_possession_player = closest_player_id
+
     def process_video(
-        self, source_video_path: str, json_file_path: Optional[str] = None
+        self, source_video_path: str, csv_file_path: Optional[str] = None
     ) -> Iterator[np.ndarray]:
         """
         Process a video to generate radar view.
 
         Args:
             source_video_path: Path to the source video
-            json_file_path: Path to save radar data as JSON
+            csv_file_path: Path to save radar data as CSV
 
         Yields:
             Annotated frames with radar view
         """
+        # Get video properties
+        video_info = sv.VideoInfo.from_video_path(source_video_path)
+        self.frame_rate = video_info.fps
+        logger.info(f"Video frame rate: {self.frame_rate} fps")
+        
         # Fit team classifier
         self.fit_team_classifier(source_video_path)
 
@@ -498,6 +647,9 @@ class RadarView:
         self.total_frames = 0
         self.possession_counts = {TEAM_A_ID: 0, TEAM_B_ID: 0}
         self.all_frames = []
+        self.csv_data = []
+        self.current_phase_id = 0
+        self.last_ball_possession_player = None
 
         # Process video frames
         logger.info("Starting main frame processing loop...")
@@ -511,7 +663,6 @@ class RadarView:
             if transformer is None:
                 logger.warning("No pitch keypoints detected, skipping frame.")
                 continue
-
 
             # Detect goalkeepers and referees
             result = self.player_model(frame, imgsz=1280, verbose=False)[0]
@@ -552,7 +703,7 @@ class RadarView:
             )
 
             # Calculate player speeds
-            self._calculate_player_speeds(frame, players, transformed_players_positions)
+            player_speeds = self._calculate_player_speeds(frame, players, transformed_players_positions, self.frame_rate)
 
             # Detect and track ball
             ball_detections = self._detect_and_track_ball(frame)
@@ -561,6 +712,15 @@ class RadarView:
                     ball_detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER)
                 )
                 / 100.0
+            )
+
+            # Update phase tracking
+            self._update_phase_tracking(
+                None,  # We'll determine this in the method
+                transformed_ball_positions,
+                transformed_players_positions,
+                players_team_id,
+                players.tracker_id,
             )
 
             # Determine ball possession
@@ -604,7 +764,20 @@ class RadarView:
             )
 
             # Save frame data for JSON export
-            self._save_frame_data(
+            # self._save_frame_data(
+            #     frame_index,
+            #     players,
+            #     goalkeepers,
+            #     players_team_id,
+            #     goalkeepers_team_id,
+            #     transformed_players_positions,
+            #     transformed_goalkeepers_positions,
+            #     transformed_referees_positions,
+            #     transformed_ball_positions,
+            # )
+
+            # Save CSV data
+            self._save_csv_data(
                 frame_index,
                 players,
                 goalkeepers,
@@ -612,8 +785,8 @@ class RadarView:
                 goalkeepers_team_id,
                 transformed_players_positions,
                 transformed_goalkeepers_positions,
-                transformed_referees_positions,
                 transformed_ball_positions,
+                player_speeds,
             )
 
             self.total_frames += 1
@@ -621,23 +794,30 @@ class RadarView:
             yield annotated_frame
 
         # Save radar data to JSON
-        if json_file_path:
-            logger.info(f"Saving radar data to {json_file_path}")
-            converted_frames = convert_numpy_types(self.all_frames)
-            with open(json_file_path, "w") as f:
-                json.dump({"frames": converted_frames}, f, indent=2)
+        # if json_file_path:
+        #     logger.info(f"Saving radar data to {json_file_path}")
+        #     converted_frames = convert_numpy_types(self.all_frames)
+        #     with open(json_file_path, "w") as f:
+        #         json.dump({"frames": converted_frames}, f, indent=2)
+
+        # Write CSV file
+        self._write_csv_file(csv_file_path)
 
 
 def run_radar(
-    source_video_path: str, device: str, json_file_path: str
+    source_video_path: str, 
+    device: str, 
+   
+    csv_file_path: Optional[str] = None
 ) -> Iterator[np.ndarray]:
     """
-    Run radar view generation on a video and save data to JSON.
+    Run radar view generation on a video and save data to JSON and CSV.
 
     Args:
         source_video_path: Path to the source video
         device: Device to run inference on ('cpu', 'cuda', 'mps')
         json_file_path: Path to save radar data as JSON
+        csv_file_path: Path to save CSV data (optional, defaults to json_file_path with .csv extension)
 
     Yields:
         Annotated frames with radar view
@@ -648,4 +828,9 @@ def run_radar(
         ball_model_path=BALL_DETECTION_MODEL_PATH,
         device=device,
     )
-    yield from radar.process_video(source_video_path, json_file_path)
+    
+    # If csv_file_path is not provided, derive it from json_file_path
+    if csv_file_path is None :
+        csv_file_path = source_video_path.replace(".mp4", ".csv")
+    
+    yield from radar.process_video(source_video_path, csv_file_path)
