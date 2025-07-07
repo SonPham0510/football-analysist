@@ -36,7 +36,7 @@ from src.speed import estimate_speed
 from Team.team import TeamClassifier
 
 from ViewTransform.view_tranform import ViewTransformer
-from src.jersey_number import JerseyNumberDetector
+#from src.jersey_number import JerseyNumberDetector
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 # Constants for team identification
 TEAM_A_ID = 0
 TEAM_B_ID = 1
-JERSEY_NUMBER_THRESHOLD = 3  # Number of times the same jersey number must be observed
+#JERSEY_NUMBER_THRESHOLD = 3  # Number of times the same jersey number must be observed
 
 
 class RadarView:
@@ -52,7 +52,7 @@ class RadarView:
     Radar view generator for football matches.
 
     This class generates a top-down schematic view of the football match,
-    showing player positions, team affiliations, jersey numbers, and ball location.
+    showing player positions, team affiliations, tracking_id, and ball location.
     """
 
     def __init__(
@@ -86,8 +86,8 @@ class RadarView:
         self.frames_to_fit = frames_to_fit
 
         # Tracking and statistics
-        self.jersey_numbers_history = defaultdict(lambda: defaultdict(int))
-        self.assigned_jersey_numbers = defaultdict(dict)
+        # self.jersey_numbers_history = defaultdict(lambda: defaultdict(int))
+        # self.assigned_jersey_numbers = defaultdict(dict)
         self.position_history = defaultdict(list)
         self.possession_counts = {TEAM_A_ID: 0, TEAM_B_ID: 0}
         self.total_frames = 0
@@ -116,12 +116,12 @@ class RadarView:
         )
         self.ball_tracker = BallTracker(buffer_size=self.ball_buffer_size)
         self.team_classifier = TeamClassifier(device=self.device)
-        self.jersey_detector = JerseyNumberDetector(
-            model_path=self.player_model_path,
-            device=self.device,
-            jersey_number_threshold=JERSEY_NUMBER_THRESHOLD,
-            use_gpu=self.device,
-        )
+        # self.jersey_detector = JerseyNumberDetector(
+        #     model_path=self.player_model_path,
+        #     device=self.device,
+        #     jersey_number_threshold=JERSEY_NUMBER_THRESHOLD,
+        #     use_gpu=self.device,
+        # )
 
     def fit_team_classifier(self, source_video_path: str) -> None:
         """
@@ -183,7 +183,7 @@ class RadarView:
         self, frame: np.ndarray, detections: sv.Detections
     ) -> Tuple[sv.Detections, np.ndarray, List[str]]:
         """
-        Detect and track players, assigning team IDs and jersey numbers.
+        Detect and track players, assigning team IDs
 
         Args:
             frame: Current video frame
@@ -192,7 +192,7 @@ class RadarView:
             Tuple containing:
                 - player detections
                 - team IDs
-                - jersey number labels
+            
         """
 
         # Filter out players
@@ -202,23 +202,8 @@ class RadarView:
         crops = get_crops(frame, players)
         players_team_id = self.team_classifier.predict(crops)
 
-        # Process jersey numbers
-        labels = []
-        for tracker_id, team_id, crop in zip(
-            players.tracker_id, players_team_id, crops
-        ):
-            jersey_number = self.jersey_detector.recognize_jersey_number(crop)
-            assigned = self.jersey_detector.update_jersey_tracking(
-                tracker_id, team_id, jersey_number
-            )
-
-            labels.append(assigned)
-        # Store assignments
-
-        self.jersey_numbers_history = self.jersey_detector.jersey_numbers_history
-        self.assigned_jersey_numbers = self.jersey_detector.assigned_jersey_numbers
-
-        return players, players_team_id, labels
+       
+        return players, players_team_id
 
     def _detect_goalkeepers_and_referees(
         self,
@@ -431,6 +416,7 @@ class RadarView:
                 (255, 255, 255),
                 2,
             )
+    
 
     def _save_frame_data(
         self,
@@ -465,9 +451,7 @@ class RadarView:
                     "id": int(tracker_id),
                     "team_id": int(team_id),
                     "position": list(pos),
-                    "jersey_number": self.assigned_jersey_numbers[team_id].get(
-                        tracker_id, None
-                    ),
+                   
                 }
                 for tracker_id, team_id, pos in zip(
                     players.tracker_id, players_team_id, transformed_players_positions
@@ -478,7 +462,7 @@ class RadarView:
                     "id": int(tracker_id),
                     "team_id": int(team_id),
                     "position": list(pos),
-                    "jersey_number": "1",
+                    
                 }
                 for tracker_id, team_id, pos in zip(
                     goalkeepers.tracker_id,
@@ -535,7 +519,7 @@ class RadarView:
             detections = self.player_tracker.update_with_detections(detections)
 
             # Extract players and classify teams
-            players, players_team_id, player_labels = self._detect_and_track_players(
+            players, players_team_id = self._detect_and_track_players(
                 frame, detections
             )
             # Detect goalkeepers and referees
@@ -598,9 +582,9 @@ class RadarView:
                 + [BALL_COLOR_ID] * len(ball_detections),
                 dtype=int,
             )
-            all_labels = player_labels + [""] * (
-                len(goalkeepers) + len(referees) + len(ball_detections)
-            )
+            all_labels = [
+                str(tracker_id) for tracker_id in all_detections.tracker_id
+            ]
 
             # Annotate frame with player and ball detections
             annotated_frame = frame.copy()
