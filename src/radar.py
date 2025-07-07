@@ -1,4 +1,4 @@
-import json
+# import json
 import logging
 import csv
 from collections import defaultdict
@@ -502,6 +502,7 @@ class RadarView:
         goalkeepers_team_id: np.ndarray,
         transformed_players_positions: np.ndarray,
         transformed_goalkeepers_positions: np.ndarray,
+        transformed_referees_positions: np.ndarray,
         transformed_ball_positions: np.ndarray,
         player_speeds: dict,
     ) -> None:
@@ -623,7 +624,8 @@ class RadarView:
             self.last_ball_possession_player = closest_player_id
 
     def process_video(
-        self, source_video_path: str, csv_file_path: Optional[str] = None
+        self, source_video_path: str,
+          csv_file_path: Optional[str] = None
     ) -> Iterator[np.ndarray]:
         """
         Process a video to generate radar view.
@@ -631,6 +633,7 @@ class RadarView:
         Args:
             source_video_path: Path to the source video
             csv_file_path: Path to save radar data as CSV
+           
 
         Yields:
             Annotated frames with radar view
@@ -763,19 +766,19 @@ class RadarView:
                 annotated_frame, all_detections, color_lookup, all_labels, keypoints
             )
 
-            # Save frame data for JSON export
-            # self._save_frame_data(
-            #     frame_index,
-            #     players,
-            #     goalkeepers,
-            #     players_team_id,
-            #     goalkeepers_team_id,
-            #     transformed_players_positions,
-            #     transformed_goalkeepers_positions,
-            #     transformed_referees_positions,
-            #     transformed_ball_positions,
-            # )
-
+            # Save frame data for JSON export (if requested)
+            # if json_file_path:
+            #     self._save_frame_data(
+            #         frame_index,
+            #         players,
+            #         goalkeepers,
+            #         players_team_id,
+            #         goalkeepers_team_id,
+            #         transformed_players_positions,
+            #         transformed_goalkeepers_positions,
+            #         transformed_referees_positions,
+            #         transformed_ball_positions,
+            #     )
             # Save CSV data
             self._save_csv_data(
                 frame_index,
@@ -785,15 +788,17 @@ class RadarView:
                 goalkeepers_team_id,
                 transformed_players_positions,
                 transformed_goalkeepers_positions,
+                transformed_referees_positions,
                 transformed_ball_positions,
                 player_speeds,
             )
+            
 
             self.total_frames += 1
             frame_index += 1
             yield annotated_frame
 
-        # Save radar data to JSON
+        # # Save radar data to JSON (if requested)
         # if json_file_path:
         #     logger.info(f"Saving radar data to {json_file_path}")
         #     converted_frames = convert_numpy_types(self.all_frames)
@@ -801,7 +806,8 @@ class RadarView:
         #         json.dump({"frames": converted_frames}, f, indent=2)
 
         # Write CSV file
-        self._write_csv_file(csv_file_path)
+        if csv_file_path:
+            self._write_csv_file(csv_file_path)
 
 
 def run_radar(
@@ -816,8 +822,8 @@ def run_radar(
     Args:
         source_video_path: Path to the source video
         device: Device to run inference on ('cpu', 'cuda', 'mps')
-        json_file_path: Path to save radar data as JSON
-        csv_file_path: Path to save CSV data (optional, defaults to json_file_path with .csv extension)
+        json_file_path: Path to save radar data as JSON (optional)
+        csv_file_path: Path to save CSV data (optional, defaults to source_video_path with .csv extension)
 
     Yields:
         Annotated frames with radar view
@@ -829,8 +835,6 @@ def run_radar(
         device=device,
     )
     
-    # If csv_file_path is not provided, derive it from json_file_path
-    if csv_file_path is None :
-        csv_file_path = source_video_path.replace(".mp4", ".csv")
+   
     
     yield from radar.process_video(source_video_path, csv_file_path)

@@ -47,7 +47,7 @@ def main(
     target_video_path: str,
     device: str,
     mode: Mode,
-    json_file_path: Optional[str] = None
+    csv_file_path: Optional[str] = None
 ) -> None:
     """
     Main function for running football video analysis.
@@ -57,8 +57,8 @@ def main(
         target_video_path: Path where the annotated video will be saved
         device: Device to run inference on ('cpu', 'cuda', 'mps')
         mode: Analysis mode to run
-        json_file_path: Path to save additional data (required for RADAR mode)
-        
+        csv_file_path: Path to save additional data (required for RADAR mode)
+
     Raises:
         NotImplementedError: If the specified mode is not implemented
         ValueError: If required parameters are missing for a specific mode
@@ -66,9 +66,9 @@ def main(
     logger.info(f"Running {mode.value} on {source_video_path} using {device}")
     
     # Validate inputs
-    if mode == Mode.RADAR and not json_file_path:
-        raise ValueError("JSON file path is required for RADAR mode")
-    
+    if mode == Mode.RADAR and not csv_file_path:
+        raise ValueError("CSV file path is required for RADAR mode")
+
     # Select processing mode and get frame generator
     frame_generator = None
     
@@ -106,7 +106,7 @@ def main(
         frame_generator = run_radar(
             source_video_path=source_video_path,
             device=device,
-            json_file_path=json_file_path
+            csv_file_path=csv_file_path
         )
     
     else:
@@ -154,9 +154,9 @@ def parse_args():
         help='Analysis mode to run'
     )
     parser.add_argument(
-        '--json_file_path',
+        '--csv_file_path',
         type=str,
-        default='output.json',
+        default='tracking_data.csv',
         help='Path to save additional data (required for RADAR mode)'
     )
     return parser.parse_args()
@@ -173,5 +173,5 @@ if __name__ == '__main__':
         target_video_path=args.target_video_path,
         device=args.device,
         mode=args.mode,
-        json_file_path=args.json_file_path
+        csv_file_path=args.csv_file_path
     )
