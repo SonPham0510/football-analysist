@@ -24,12 +24,17 @@ class ViewTransformer:
             raise ValueError("Source and target must have the same shape.")
         if source.shape[1] != 2:
             raise ValueError("Source and target points must be 2D coordinates.")
+       
 
         source = source.astype(np.float32)
         target = target.astype(np.float32)
-        self.m, _ = cv2.findHomography(source, target)
-        if self.m is None:
-            raise ValueError("Homography matrix could not be calculated.")
+        
+        try:
+            self.m, _ = cv2.findHomography(source, target)
+            if self.m is None:
+                raise ValueError("Homography matrix could not be calculated.")
+        except Exception as e:
+            raise ValueError(f"Error occurred while calculating homography: {e}")
 
     def transform_points(
         self, points: npt.NDArray[np.float32]
