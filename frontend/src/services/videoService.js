@@ -37,34 +37,12 @@ class VideoService {
             };
         }
     }
-
-    static async getVideoInfo(videoName) {
+    static async analyzeVideo(videoName) {
         try {
-            const response = await axios.get(`${API_BASE_URL}/video-info/${videoName}`);
-            return {
-                success: true,
-                data: response.data
-            };
+            const response = await axios.post(`${API_BASE_URL}/ai-analyze`, { video_name: videoName });
+            return { success: true, data: response.data };
         } catch (error) {
-            return {
-                success: false,
-                error: error.response?.data?.message || 'Failed to fetch video info'
-            };
-        }
-    }
-
-    static async listVideos() {
-        try {
-            const response = await axios.get(`${API_BASE_URL}/list-videos`);
-            return {
-                success: true,
-                data: response.data
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.response?.data?.message || 'Failed to fetch videos'
-            };
+            return { success: false, error: error.response?.data?.error || 'AI analysis failed' };
         }
     }
 }

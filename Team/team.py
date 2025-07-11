@@ -77,7 +77,7 @@ class TeamClassifier:
         self.reducer = PCA(n_components=3, random_state=0, svd_solver="randomized")
         # Initialize KMeans for clustering
         self.cluster_model = KMeans(
-            n_clusters=self.n_cluster, random_state=0, n_init="auto", max_iter=300
+            n_clusters=self.n_cluster, random_state=42, n_init=20, max_iter=300
         )
 
     def extract_features(self, crops: List[np.ndarray]) -> np.ndarray:

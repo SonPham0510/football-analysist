@@ -3,7 +3,7 @@ from typing import Dict, Iterator, List, Tuple
 import logging
 import cv2
 import numpy as np
-from paddleocr import PaddleOCR
+#from paddleocr import PaddleOCR
 import supervision as sv
 from tqdm import tqdm
 from ultralytics import YOLO

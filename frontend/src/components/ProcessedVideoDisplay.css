@@ -5,6 +5,31 @@
     border-radius: 20px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
+.ai-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.ai-btn {
+    padding: 8px 20px;
+    background: #4fd1c7;
+    border: none;
+    border-radius: 8px;
+    color: #1a202c;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ai-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.analysis-result {
+    margin-top: 15px;
+    white-space: pre-wrap;
+    color: #e2e8f0;
+}
 
 .processed-video-section.success {
     background: linear-gradient(135deg, #1a202c, #2d3748);

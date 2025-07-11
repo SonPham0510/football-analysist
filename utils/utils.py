@@ -130,6 +130,8 @@ def render_radar(
     # Filter valid keypoints
     mask = (keypoints.xy[0][:, 0] > 1) & (keypoints.xy[0][:, 1] > 1)
 
+   
+
     # Create view transformer to convert frame coordinates to pitch coordinates
     transformer = ViewTransformer(
         source=keypoints.xy[0][mask].astype(np.float32),
@@ -159,7 +161,7 @@ def render_radar(
             config=CONFIG,
             xy=team_xy,
             face_color=sv.Color.from_hex(COLORS[color_id]),
-            radius=5 if color_id == BALL_COLOR_ID else 20,  # Smaller radius for ball
+            radius=5 if color_id == BALL_COLOR_ID else 30,  # Smaller radius for ball
             pitch=radar,
             labels=team_labels,
         )

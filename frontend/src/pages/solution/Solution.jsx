@@ -9,7 +9,7 @@ import "./index.css";
 
 const Solution = () => {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedMode, setSelectedMode] = useState('PLAYER_DETECTION');
+  const [selectedMode, setSelectedMode] = useState('RADAR');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedVideo, setProcessedVideo] = useState('');
   const [videoInfo, setVideoInfo] = useState(null);
@@ -18,22 +18,12 @@ const Solution = () => {
   const [loadingState, setLoadingState] = useState('');
 
   const modes = [
-    'PITCH_DETECTION',
-    'PLAYER_DETECTION',
-    'BALL_TRACKING',
-    'PLAYER_TRACKING',
-    'TEAM_CLASSIFICATION',
-    'JERSEY_DETECTION',
+    
     'RADAR'
   ];
 
   const modeDescriptions = {
-    'PITCH_DETECTION': 'Detect and analyze the football pitch boundaries, goal areas, and field markings',
-    'PLAYER_DETECTION': 'Identify and track all players on the field with bounding boxes',
-    'BALL_TRACKING': 'Track the football throughout the match with precise location detection',
-    'PLAYER_TRACKING': 'Follow player movements and create trajectory paths across the field',
-    'TEAM_CLASSIFICATION': 'Classify players into different teams based on jersey colors',
-    'JERSEY_DETECTION': 'Detect and read jersey numbers for player identification',
+    
     'RADAR': 'Generate tactical radar view showing player positions and movements'
   };
 
@@ -79,7 +69,7 @@ const Solution = () => {
 
       if (result.success && result.data.success) {
         // SUCCESS: Video processed and uploaded!
-        setLoadingState('🎉 Processing and upload complete!');
+        setLoadingState('Processing and upload complete!');
 
         // Set video info directly from response
         setVideoInfo({
