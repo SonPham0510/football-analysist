@@ -8,7 +8,7 @@ import numpy as np
 import supervision as sv
 from tqdm import tqdm
 
-from config.config import COLORS, CONFIG,BALL_COLOR_ID
+from config.config import COLORS, CONFIG, BALL_COLOR_ID
 from cloudinary_config import CloudinaryManager
 from pitch_annotator.soccer import draw_pitch, draw_points_with_labels_on_pitch
 from ViewTransform.view_tranform import ViewTransformer
@@ -129,8 +129,6 @@ def render_radar(
     """
     # Filter valid keypoints
     mask = (keypoints.xy[0][:, 0] > 1) & (keypoints.xy[0][:, 1] > 1)
-
-   
 
     # Create view transformer to convert frame coordinates to pitch coordinates
     transformer = ViewTransformer(
@@ -262,43 +260,46 @@ def save_video(
     except Exception as e:
         logger.error(f"Error saving video: {str(e)}")
 
+
 class VideoUtils:
     @staticmethod
-    def upload_processed_video_to_cloud(local_path: str, video_name: str) -> Dict[str, Any]:
+    def upload_processed_video_to_cloud(
+        local_path: str, video_name: str
+    ) -> Dict[str, Any]:
         """
         Upload processed video to Cloudinary and return cloud info
         """
         try:
             if not os.path.exists(local_path):
                 return {"success": False, "error": "Local video file not found"}
-            
+
             # Generate public_id from video name (remove extension)
             public_id = Path(video_name).stem
-            
+
             # Upload to Cloudinary
             result = CloudinaryManager.upload_video(
-                file_path=local_path,
-                public_id=public_id,
-                folder="football_analysis"
+                file_path=local_path, public_id=public_id, folder="football_analysis"
             )
-            
+
             if result["success"]:
                 logger.info(f"Successfully uploaded {video_name} to Cloudinary")
                 return {
                     "success": True,
                     "cloudinary_url": result["secure_url"],
                     "public_id": result["public_id"],
-                    "player_url": CloudinaryManager.get_player_embed_url(result["public_id"]),
-                    "direct_url": CloudinaryManager.get_video_url(result["public_id"])
+                    "player_url": CloudinaryManager.get_player_embed_url(
+                        result["public_id"]
+                    ),
+                    "direct_url": CloudinaryManager.get_video_url(result["public_id"]),
                 }
             else:
                 logger.error(f"Failed to upload {video_name}: {result['error']}")
                 return result
-                
+
         except Exception as e:
             logger.error(f"Error uploading video {video_name}: {str(e)}")
             return {"success": False, "error": str(e)}
-    
+
     @staticmethod
     def get_cloud_video_info(public_id: str) -> Dict[str, Any]:
         """
@@ -307,16 +308,16 @@ class VideoUtils:
         try:
             direct_url = CloudinaryManager.get_video_url(public_id)
             player_url = CloudinaryManager.get_player_embed_url(public_id)
-            
+
             return {
                 "success": True,
                 "public_id": public_id,
                 "direct_url": direct_url,
-                "player_url": player_url
+                "player_url": player_url,
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
-    
+
     @staticmethod
     def cleanup_local_file(file_path: str) -> bool:
         """
@@ -330,4 +331,95 @@ class VideoUtils:
             return False
         except Exception as e:
             logger.error(f"Error cleaning up file {file_path}: {str(e)}")
+            return False
+
+    @staticmethod
+    def upload_csv_to_cloud(local_csv_path: str, csv_name: str) -> Dict[str, Any]:
+        """
+        Upload CSV file to Cloudinary and return cloud info
+        """
+        try:
+            if not os.path.exists(local_csv_path):
+                return {"success": False, "error": "Local CSV file not found"}
+
+            # Generate public_id from CSV name (remove extension)
+            public_id = Path(csv_name).stem
+
+            # Upload to Cloudinary
+            result = CloudinaryManager.upload_csv(
+                file_path=local_csv_path,
+                public_id=public_id,
+                folder="football_analysis/csv",
+            )
+
+            if result["success"]:
+                logger.info(f"Successfully uploaded {csv_name} to Cloudinary")
+                return {
+                    "success": True,
+                    "cloudinary_url": result["secure_url"],
+                    "public_id": result["public_id"],
+                    "direct_url": result["url"],
+                    "bytes": result.get("bytes", 0),
+                }
+            else:
+                logger.error(f"Failed to upload {csv_name}: {result['error']}")
+                return result
+
+        except Exception as e:
+            logger.error(f"Error uploading CSV {csv_name}: {str(e)}")
+            return {"success": False, "error": str(e)}
+
+    @staticmethod
+    def upload_complete_match_data(
+        video_path: str, csv_path: str, match_name: str
+    ) -> Dict[str, Any]:
+        """
+        Upload both video and CSV for a complete match analysis
+        """
+        try:
+            results = {}
+
+            # Upload video first
+            video_result = VideoUtils.upload_processed_video_to_cloud(
+                video_path, f"{match_name}.mp4"
+            )
+            results["video"] = video_result
+
+            # Upload CSV if exists
+            if os.path.exists(csv_path):
+                csv_result = VideoUtils.upload_csv_to_cloud(
+                    csv_path, f"{match_name}.csv"
+                )
+                results["csv"] = csv_result
+            else:
+                results["csv"] = {"success": False, "error": "CSV file not found"}
+
+            # Overall success depends on both uploads
+            overall_success = video_result.get("success", False) and results["csv"].get(
+                "success", False
+            )
+
+            return {
+                "success": overall_success,
+                "match_name": match_name,
+                "video": video_result,
+                "csv": results["csv"],
+                "message": "Complete match data uploaded successfully"
+                if overall_success
+                else "Partial upload completed",
+            }
+
+        except Exception as e:
+            logger.error(f"Error uploading complete match data: {str(e)}")
+            return {"success": False, "error": str(e)}
+
+    @staticmethod
+    def download_csv_from_cloud(public_id: str, local_path: str) -> bool:
+        """
+        Download CSV file from Cloudinary for local analysis
+        """
+        try:
+            return CloudinaryManager.download_csv(public_id, local_path)
+        except Exception as e:
+            logger.error(f"Error downloading CSV {public_id}: {str(e)}")
             return False
