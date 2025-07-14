@@ -13,7 +13,7 @@ fi
 # download the models
 gdown -O "$DIR/data/football-ball-detection.pt" "https://drive.google.com/uc?id=1-Z_hEP-LN5U8-b_k6Bnut1WgGXfjbPkt"
 gdown -O "$DIR/data/football-player-detection.pt" "https://drive.google.com/uc?id=1c0J0-uD2XkyCNxyBTQU3_vYIkhBVzSjU"
-gdown -O "$DIR/data/football-pitch-detection.pt" "https://drive.google.com/uc?id=1Ma5Kt86tgpdjCTKfum79YMgNnSjcoOyf"
+gdown -O "$DIR/data/football-pitch-detection.pt" "https://drive.google.com/uc?id=1UZxopGCNWwX7lPgCoExAQKJZbsAXZnx5"
 
 # download the videos
 gdown -O "$DIR/data/0bfacc_0.mp4" "https://drive.google.com/uc?id=12TqauVZ9tLAv8kWxTTBFWtgt2hNQ4_ZF"

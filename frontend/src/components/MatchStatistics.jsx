@@ -12,24 +12,40 @@ const MatchStatistics = ({ csvFileName, onClose }) => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [heatmapData, setHeatmapData] = useState(null);
+  const [filterType, setFilterType] = useState(null); // 'team', 'player', or null
+
+  console.log('MatchStatistics component rendered with csvFileName:', csvFileName);
 
   useEffect(() => {
+    console.log('MatchStatistics useEffect triggered for csvFileName:', csvFileName);
     fetchStatistics();
   }, [csvFileName]);
 
   const fetchStatistics = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/statistics/${csvFileName}`);
+      setError(null);
+
+      // Use the correct API endpoint (without /api prefix)
+      const response = await fetch(`http://localhost:8000/statistics/${csvFileName}`);
+      console.log('Fetching statistics from:', response.url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
-      
-      if (data.success) {
+
+      if (data.success && data.data) {
         setStatistics(data.data);
+        setError(null);
       } else {
-        setError('Failed to load statistics');
+        setError(data.detail || 'Failed to load statistics - no data available');
+        setStatistics(null);
       }
     } catch (err) {
-      setError(`Error: ${err.message}`);
+      console.error('Statistics fetch error:', err);
+      setError(`Failed to load statistics: ${err.message}`);
+      setStatistics(null);
     } finally {
       setLoading(false);
     }
@@ -40,17 +56,93 @@ const MatchStatistics = ({ csvFileName, onClose }) => {
       const params = new URLSearchParams();
       if (playerId) params.append('player_id', playerId);
       if (teamId) params.append('team_id', teamId);
-      
-      const response = await fetch(`/api/statistics/${csvFileName}/heatmap?${params}`);
+
+      const response = await fetch(`http://localhost:8000/statistics/${csvFileName}/heatmap?${params}`);
       const data = await response.json();
-      
+
       if (data.success) {
         setHeatmapData(data.data);
+      } else {
+        console.error('Heatmap error:', data.detail);
       }
     } catch (err) {
       console.error('Error fetching heatmap data:', err);
     }
   };
+
+  // Handle loading state
+  if (loading) {
+    return (
+      <div className="match-statistics-modal">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h2>Loading Statistics...</h2>
+            <button className="close-button" onClick={onClose}>×</button>
+          </div>
+          <div className="loading-content">
+            <div className="spinner"></div>
+            <p>Analyzing match data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="match-statistics-modal">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h2>Error Loading Statistics</h2>
+            <button className="close-button" onClick={onClose}>×</button>
+          </div>
+          <div className="error-content">
+            <div className="error-icon">⚠️</div>
+            <h3>Unable to Load Statistics</h3>
+            <p className="error-message">{error}</p>
+            <div className="error-suggestions">
+              <h4>Possible solutions:</h4>
+              <ul>
+                <li>Make sure the video was processed with RADAR mode</li>
+                <li>Check that the CSV file was generated successfully</li>
+                <li>Try refreshing the page</li>
+              </ul>
+            </div>
+            <button
+              className="retry-button"
+              onClick={() => {
+                setError(null);
+                fetchStatistics();
+              }}
+            >
+              🔄 Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle no statistics state
+  if (!statistics) {
+    return (
+      <div className="match-statistics-modal">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h2>No Statistics Available</h2>
+            <button className="close-button" onClick={onClose}>×</button>
+          </div>
+          <div className="no-data-content">
+            <div className="no-data-icon">📊</div>
+            <h3>No Match Data Found</h3>
+            <p>Statistics are not available for this video.</p>
+            <p>Make sure the video was processed using <strong>RADAR</strong> mode to generate statistics.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderOverview = () => {
     if (!statistics) return null;
@@ -88,89 +180,10 @@ const MatchStatistics = ({ csvFileName, onClose }) => {
                   <span>Players: {stats.player_count}</span>
                 </div>
                 <div className="team-stat">
-                  <span>Avg Speed: {stats.avg_speed} m/s</span>
-                </div>
-                <div className="team-stat">
-                  <span>Max Speed: {stats.max_speed} m/s</span>
-                </div>
-                <div className="team-stat">
                   <span>Possession: {stats.possession_percentage}%</span>
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderSpeedStats = () => {
-    if (!statistics?.speed_stats) return null;
-
-    const { fastest_players, slowest_players, overall_stats } = statistics.speed_stats;
-
-    const speedData = Object.entries(fastest_players).slice(0, 10).map(([playerId, stats]) => ({
-      player: `Player ${playerId}`,
-      maxSpeed: stats.max,
-      avgSpeed: stats.mean
-    }));
-
-    return (
-      <div className="speed-stats-container">
-        <div className="stats-summary">
-          <h3>Speed Overview</h3>
-          <div className="speed-cards">
-            <div className="stat-card">
-              <h4>Average Speed</h4>
-              <p>{overall_stats.avg_speed_all_players} m/s</p>
-            </div>
-            <div className="stat-card">
-              <h4>Max Speed Recorded</h4>
-              <p>{overall_stats.max_speed_recorded} m/s</p>
-            </div>
-            <div className="stat-card">
-              <h4>Total Players</h4>
-              <p>{overall_stats.total_players}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="speed-chart">
-          <h3>Top 10 Fastest Players</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={speedData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="player" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="maxSpeed" fill="#8884d8" name="Max Speed (m/s)" />
-              <Bar dataKey="avgSpeed" fill="#82ca9d" name="Avg Speed (m/s)" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="player-lists">
-          <div className="fastest-players">
-            <h4>🏃‍♂️ Fastest Players</h4>
-            <ul>
-              {Object.entries(fastest_players).slice(0, 5).map(([playerId, stats]) => (
-                <li key={playerId}>
-                  Player {playerId}: {stats.max} m/s (avg: {stats.mean} m/s)
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          <div className="slowest-players">
-            <h4>🐢 Slowest Average Speed</h4>
-            <ul>
-              {Object.entries(slowest_players).slice(0, 5).map(([playerId, stats]) => (
-                <li key={playerId}>
-                  Player {playerId}: {stats.mean} m/s (max: {stats.max} m/s)
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </div>
@@ -333,121 +346,222 @@ const MatchStatistics = ({ csvFileName, onClose }) => {
         <div className="heatmap-controls">
           <h3>Player Heatmap</h3>
           <div className="heatmap-filters">
-            <select 
-              value={selectedTeam || ''} 
-              onChange={(e) => {
-                setSelectedTeam(e.target.value || null);
+            <div className="filter-section">
+              <label>Filter by Team:</label>
+              <select
+                value={selectedTeam || ''}
+                disabled={filterType === 'player'}
+                onChange={(e) => {
+                  const teamValue = e.target.value || null;
+                  setSelectedTeam(teamValue);
+                  setSelectedPlayer(null);
+                  setFilterType(teamValue ? 'team' : null);
+                  fetchHeatmapData(null, teamValue);
+                }}
+              >
+                <option value="">All Teams</option>
+                <option value="0">Team 0</option>
+                <option value="1">Team 1</option>
+              </select>
+            </div>
+
+            <div className="filter-section">
+              <label>Filter by Player:</label>
+              <select
+                value={selectedPlayer || ''}
+                onChange={(e) => {
+                  const playerValue = e.target.value || null;
+                  setSelectedPlayer(playerValue);
+                  setFilterType(playerValue ? 'player' : null);
+                  fetchHeatmapData(playerValue, null);
+                }}
+              >
+                <option value="">All Players</option>
+                {statistics?.possession_stats?.top_possession_players &&
+                  Object.keys(statistics.possession_stats.top_possession_players).map(playerId => (
+                    <option key={playerId} value={playerId}>Player {playerId}</option>
+                  ))
+                }
+                {/* Fallback: use event stats if possession stats not available */}
+                {!statistics?.possession_stats?.top_possession_players &&
+                  statistics?.event_stats?.top_passers &&
+                  Object.keys(statistics.event_stats.top_passers).map(playerId => (
+                    <option key={playerId} value={playerId}>Player {playerId}</option>
+                  ))
+                }
+              </select>
+            </div>
+
+            <button
+              className="clear-filters-btn"
+              onClick={() => {
                 setSelectedPlayer(null);
-                fetchHeatmapData(null, e.target.value || null);
+                setFilterType(null);
+                fetchHeatmapData();
               }}
             >
-              <option value="">Select Team</option>
-              <option value="0">Team 0</option>
-              <option value="1">Team 1</option>
-            </select>
-
-            <select 
-              value={selectedPlayer || ''} 
-              onChange={(e) => {
-                setSelectedPlayer(e.target.value || null);
-                setSelectedTeam(null);
-                fetchHeatmapData(e.target.value || null, null);
-              }}
-            >
-              <option value="">Select Player</option>
-              {statistics?.speed_stats?.detailed_player_stats && 
-                Object.keys(statistics.speed_stats.detailed_player_stats).map(playerId => (
-                  <option key={playerId} value={playerId}>Player {playerId}</option>
-                ))
-              }
-            </select>
-
-            <button onClick={() => {
-              setSelectedPlayer(null);
-              setSelectedTeam(null);
-              fetchHeatmapData();
-            }}>
-              Show All Players
+              Clear All Filters
             </button>
+          </div>
+
+          {/* Filter Status Display */}
+          <div className="filter-status">
+            {filterType === 'player' && selectedPlayer && (
+              <span className="active-filter">👤 Showing Player {selectedPlayer}</span>
+            )}
+            {!filterType && (
+              <span className="active-filter">🌐 Showing All Players</span>
+            )}
           </div>
         </div>
 
         <div className="heatmap-visualization">
           {heatmapData ? (
-            <div className="heatmap-info">
-              <p>Total Positions: {heatmapData.total_positions}</p>
-              <p>X Range: {heatmapData.x_range[0].toFixed(1)} - {heatmapData.x_range[1].toFixed(1)}</p>
-              <p>Y Range: {heatmapData.y_range[0].toFixed(1)} - {heatmapData.y_range[1].toFixed(1)}</p>
-              
+            <div className="heatmap-content">
+              <div className="heatmap-info">
+                <div className="heatmap-stats">
+                  <div className="stat-item">
+                    <span className="stat-label">Total Positions:</span>
+                    <span className="stat-value">{heatmapData.total_positions}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">X Range:</span>
+                    <span className="stat-value">{heatmapData.x_range[0].toFixed(1)} - {heatmapData.x_range[1].toFixed(1)}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Y Range:</span>
+                    <span className="stat-value">{heatmapData.y_range[0].toFixed(1)} - {heatmapData.y_range[1].toFixed(1)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Soccer Field Heatmap */}
+              <div className="heatmap-chart">
+                <h4>🏟️ Player Movement Heatmap</h4>
+                <div className="soccer-field-heatmap">
+                  {/* Field Lines and Areas -  */}
+                  <div className="field-lines"></div>
+                  <div className="center-spot"></div>
+                  <div className="goal-area-left"></div>
+                  <div className="goal-area-right"></div>
+                  <div className="penalty-area-left"></div>
+                  <div className="penalty-area-right"></div>
+                  <div className="penalty-spot-left"></div>
+                  <div className="penalty-spot-right"></div>
+
+                  {/* Player Position Dots */}
+                  {heatmapData.position_frequency && heatmapData.position_frequency.map((position, index) => {
+                    const xPercent = ((position.x - heatmapData.x_range[0]) / (heatmapData.x_range[1] - heatmapData.x_range[0])) * 100;
+                    const yPercent = ((position.y - heatmapData.y_range[0]) / (heatmapData.y_range[1] - heatmapData.y_range[0])) * 100;
+                    return (
+                      <div
+                        key={index}
+                        className="player-dot"
+                        style={{
+                          left: `${Math.max(1, Math.min(99, xPercent))}%`,
+                          top: `${Math.max(1, Math.min(99, 100 - yPercent))}%`,
+                          opacity: Math.min(1, 0.3 + (position.frequency / 50)),
+                          width: `${Math.max(6, Math.min(16, 6 + position.frequency / 10))}px`,
+                          height: `${Math.max(6, Math.min(16, 6 + position.frequency / 10))}px`
+                        }}
+                        title={`Position (${position.x.toFixed(1)}, ${position.y.toFixed(1)}) - Activity: ${position.frequency}`}
+                      />
+                    );
+                  })}
+
+                  {/* Heat Zones for high activity areas */}
+                  {heatmapData.top_activity_zones && heatmapData.top_activity_zones.slice(0, 5).map((zone, index) => {
+                    const xPercent = ((zone.x - heatmapData.x_range[0]) / (heatmapData.x_range[1] - heatmapData.x_range[0])) * 100;
+                    const yPercent = ((zone.y - heatmapData.y_range[0]) / (heatmapData.y_range[1] - heatmapData.y_range[0])) * 100;
+
+                    let heatClass = 'low';
+                    if (zone.frequency > 50) heatClass = 'very-high';
+                    else if (zone.frequency > 30) heatClass = 'high';
+                    else if (zone.frequency > 15) heatClass = 'medium';
+
+                    const zoneSize = Math.min(100, 20 + (zone.frequency / 2));
+
+                    return (
+                      <div
+                        key={`zone-${index}`}
+                        className={`heat-zone ${heatClass}`}
+                        style={{
+                          left: `${Math.max(0, Math.min(95, xPercent - zoneSize / 2))}%`,
+                          top: `${Math.max(0, Math.min(95, yPercent - zoneSize / 2))}%`,
+                          width: `${zoneSize}px`,
+                          height: `${zoneSize}px`
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Heat Intensity Legend */}
+                <div className="heat-legend">
+                  <span className="heat-legend-label">Activity Level:</span>
+                  <div className="heat-scale">
+                    <div className="heat-scale-item low" title="Low Activity"></div>
+                    <div className="heat-scale-item medium" title="Medium Activity"></div>
+                    <div className="heat-scale-item high" title="High Activity"></div>
+                    <div className="heat-scale-item very-high" title="Very High Activity"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Top Activity Zones Table */}
               <div className="top-activity-zones">
-                <h4>Top Activity Zones:</h4>
-                <ul>
-                  {heatmapData.top_activity_zones?.slice(0, 5).map((zone, idx) => (
-                    <li key={idx}>
-                      Position ({zone.x.toFixed(1)}, {zone.y.toFixed(1)}): {zone.frequency} occurrences
-                    </li>
-                  ))}
-                </ul>
+                <h4>🔥 Hottest Activity Zones</h4>
+                <div className="activity-zones-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Position (X, Y)</th>
+                        <th>Activity Count</th>
+                        <th>Intensity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {heatmapData.top_activity_zones?.slice(0, 10).map((zone, idx) => (
+                        <tr key={idx} className={idx < 3 ? 'top-zone' : ''}>
+                          <td>#{idx + 1}</td>
+                          <td>({zone.x.toFixed(1)}, {zone.y.toFixed(1)})</td>
+                          <td>{zone.frequency}</td>
+                          <td>
+                            <div className="intensity-bar">
+                              <div
+                                className="intensity-fill"
+                                style={{
+                                  width: `${(zone.frequency / heatmapData.top_activity_zones[0].frequency) * 100}%`,
+                                  backgroundColor: idx < 3 ? '#ff4757' : idx < 6 ? '#ffa502' : '#2ed573'
+                                }}
+                              ></div>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           ) : (
-            <p>Select a player or team to view heatmap data</p>
+            <div className="no-heatmap-data">
+              <div className="no-data-icon">🗺️</div>
+              <h4>No Heatmap Data</h4>
+              <p>Select a player to view their movement heatmap</p>
+              <button
+                onClick={() => fetchHeatmapData()}
+                className="load-all-button"
+              >
+                Load All Players Heatmap
+              </button>
+            </div>
           )}
         </div>
       </div>
     );
   };
-
-  const renderTimeline = () => {
-    if (!statistics?.match_timeline) return null;
-
-    const { timeline } = statistics.match_timeline;
-
-    const timelineData = timeline.map(segment => ({
-      time: `${segment.start_time}s`,
-      avgSpeed: segment.avg_speed,
-      team0Possession: segment.possession_team_0,
-      team1Possession: segment.possession_team_1,
-      totalActions: segment.total_actions
-    }));
-
-    return (
-      <div className="timeline-container">
-        <h3>Match Timeline</h3>
-        <div className="timeline-chart">
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={timelineData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="avgSpeed" stroke="#8884d8" name="Avg Speed (m/s)" />
-              <Line type="monotone" dataKey="totalActions" stroke="#82ca9d" name="Total Actions" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="possession-timeline">
-          <h4>Possession Over Time</h4>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={timelineData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="team0Possession" stackId="a" fill="#0088FE" name="Team 0" />
-              <Bar dataKey="team1Possession" stackId="a" fill="#00C49F" name="Team 1" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    );
-  };
-
-  if (loading) return <div className="loading">Loading statistics...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
 
   return (
     <div className="match-statistics-modal">
@@ -458,31 +572,25 @@ const MatchStatistics = ({ csvFileName, onClose }) => {
         </div>
 
         <div className="tabs">
-          <button 
+          <button
             className={selectedTab === 'overview' ? 'tab active' : 'tab'}
             onClick={() => setSelectedTab('overview')}
           >
             Overview
           </button>
-          <button 
-            className={selectedTab === 'speed' ? 'tab active' : 'tab'}
-            onClick={() => setSelectedTab('speed')}
-          >
-            Speed Stats
-          </button>
-          <button 
+          <button
             className={selectedTab === 'possession' ? 'tab active' : 'tab'}
             onClick={() => setSelectedTab('possession')}
           >
             Possession
           </button>
-          <button 
+          <button
             className={selectedTab === 'events' ? 'tab active' : 'tab'}
             onClick={() => setSelectedTab('events')}
           >
             Events
           </button>
-          <button 
+          <button
             className={selectedTab === 'heatmap' ? 'tab active' : 'tab'}
             onClick={() => {
               setSelectedTab('heatmap');
@@ -491,21 +599,13 @@ const MatchStatistics = ({ csvFileName, onClose }) => {
           >
             Heatmap
           </button>
-          <button 
-            className={selectedTab === 'timeline' ? 'tab active' : 'tab'}
-            onClick={() => setSelectedTab('timeline')}
-          >
-            Timeline
-          </button>
         </div>
 
         <div className="tab-content">
           {selectedTab === 'overview' && renderOverview()}
-          {selectedTab === 'speed' && renderSpeedStats()}
           {selectedTab === 'possession' && renderPossessionStats()}
           {selectedTab === 'events' && renderEventStats()}
           {selectedTab === 'heatmap' && renderHeatmap()}
-          {selectedTab === 'timeline' && renderTimeline()}
         </div>
       </div>
     </div>

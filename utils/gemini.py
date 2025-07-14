@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 import google.generativeai as genai
 import json
 
@@ -141,11 +141,10 @@ def analyze_video_with_statistics(
     model = genai.GenerativeModel("gemini-2.5-flash")
 
     # Extract key statistics for analysis
-    speed_stats = statistics_data.get("speed_stats", {})
     possession_stats = statistics_data.get("possession_stats", {})
     event_stats = statistics_data.get("event_stats", {})
     team_comparison = statistics_data.get("team_comparison", {})
-    match_timeline = statistics_data.get("match_timeline", {})
+
     summary = statistics_data.get("summary", {})
 
     # Create statistical context for the AI
@@ -156,10 +155,7 @@ def analyze_video_with_statistics(
     - Total Phases: {summary.get("total_phases", 0)}
     - Total Teams: {summary.get("total_teams", 0)}
 
-    SPEED ANALYSIS:
-    - Average Speed All Players: {speed_stats.get("overall_stats", {}).get("avg_speed_all_players", 0):.2f} m/s
-    - Maximum Speed Recorded: {speed_stats.get("overall_stats", {}).get("max_speed_recorded", 0):.2f} m/s
-    - Fastest Players: {list(speed_stats.get("fastest_players", {}).keys())[:5] if speed_stats.get("fastest_players") else []}
+  
 
     POSSESSION ANALYSIS:
     - Team Possession Percentages: {possession_stats.get("team_possession_percentage", {})}
@@ -176,9 +172,9 @@ def analyze_video_with_statistics(
 
     # Enhanced comprehensive prompt with statistical data
     full_prompt = f"""
-    Analyze this football video with detailed statistical data and provide a comprehensive tactical analysis: {video_url}
+    Analyze this football video with detailed statistical data and provide a comprehensive tactical analysis import from   video: {video_url}
 
-    Use the following statistical data to enhance your analysis:
+    Use the following statistical data  and video for best  to enhance your analysis:
 
     {stats_context}
 
@@ -209,10 +205,7 @@ def analyze_video_with_statistics(
 
     ## PERFORMANCE ANALYSIS WITH STATISTICS
 
-    ### Speed & Movement Analysis:
-    - **Fastest players**: {speed_stats.get("fastest_players", {})}
-    - **Team speed patterns**: {speed_stats.get("team_stats", {})}
-    - **Movement efficiency**: Analyze based on speed vs. effectiveness
+   
 
     ### Possession & Ball Control:
     - **Possession distribution**: {possession_stats.get("team_possession_percentage", {})}
@@ -272,7 +265,7 @@ def analyze_video_with_statistics(
     - Momentum shifts and their causes
 
     ## STATISTICAL OBSERVATIONS
-    - Player movement patterns (from speed data)
+    # - Player movement patterns (from speed data) - Temporarily disabled
     - Passing accuracy and direction trends (from event data)
     - Defensive actions and positioning
     - Attacking third entries and final third play

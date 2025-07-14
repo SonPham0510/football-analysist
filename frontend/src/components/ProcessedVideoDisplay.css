@@ -5,6 +5,7 @@
     border-radius: 20px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
+
 .ai-section {
     margin-top: 20px;
     text-align: center;
@@ -18,6 +19,19 @@
     color: #1a202c;
     font-weight: 600;
     cursor: pointer;
+}
+
+.ai-btn.enhanced {
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-btn.enhanced:hover:not(:disabled) {
+    background: linear-gradient(135deg, #6d28d9, #2563eb);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
 }
 
 .ai-btn:disabled {
@@ -133,6 +147,23 @@
 
 .video-display .main-player.loading {
     opacity: 0.7;
+}
+
+/* Loading Animation */
+.loading-text {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
 }
 
 .video-actions {
@@ -264,6 +295,74 @@
 
 .metadata-value.warning {
     color: #ed8936;
+}
+
+/* Enhanced Analysis Styles */
+.analysis-result.enhanced {
+    background: linear-gradient(135deg, #2d1b69, #1e3a8a);
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.enhanced-content {
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.enhanced-content h2 {
+    color: #60a5fa;
+    font-size: 18px;
+    margin: 20px 0 10px 0;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 5px;
+}
+
+.enhanced-content h3 {
+    color: #93c5fd;
+    font-size: 16px;
+    margin: 15px 0 8px 0;
+}
+
+.enhanced-content h4 {
+    color: #dbeafe;
+    font-size: 14px;
+    margin: 12px 0 6px 0;
+}
+
+.enhanced-content strong {
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+.enhanced-content li {
+    margin: 4px 0;
+    padding-left: 20px;
+    list-style: none;
+    position: relative;
+}
+
+.enhanced-content li::before {
+    content: "•";
+    color: #60a5fa;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.fallback-notice {
+    margin-top: 15px;
+    padding: 12px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 8px;
+    color: #fbbf24;
+    font-size: 13px;
+}
+
+.fallback-notice strong {
+    color: #f59e0b;
 }
 
 /* Responsive Design */
