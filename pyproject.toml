@@ -21,5 +21,6 @@ dependencies = [
     "tqdm>=4.67.1",
     "transformers>=4.51.3",
     "ultralytics>=8.3.135",
+    "umap-learn>=0.5.9.post2",
     "uvicorn>=0.34.3",
 ]

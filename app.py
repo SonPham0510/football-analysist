@@ -61,7 +61,7 @@ def process_video_complete(source: Path, target: Path, mode: Mode) -> dict:
         analyse_video(
             source_video_path=str(source),
             target_video_path=str(target),
-            device="cpu",
+            device="cuda",
             mode=mode,
             csv_file_path=csv_file_path,
         )

@@ -8,6 +8,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from tqdm import tqdm
 from transformers import AutoProcessor, SiglipVisionModel
+from umap import UMAP
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -74,7 +75,7 @@ class TeamClassifier:
         self.processor.image_processor.image_mean = [0.485, 0.456, 0.406]
         self.processor.image_processor.image_std = [0.229, 0.224, 0.225]
         # Initialize UMAP for dimensionality reduction
-        self.reducer = PCA(n_components=3, random_state=0, svd_solver="randomized")
+        self.reducer = UMAP(n_components=3, random_state=0)
         # Initialize KMeans for clustering
         self.cluster_model = KMeans(
             n_clusters=self.n_cluster, random_state=42, n_init=20, max_iter=300

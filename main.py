@@ -143,7 +143,7 @@ def parse_args():
     parser.add_argument(
         '--device',
         type=str,
-        default='cpu',
+        default='gpu',
         help='Device to run inference on (cpu, cuda, mps)'
     )
     parser.add_argument(
