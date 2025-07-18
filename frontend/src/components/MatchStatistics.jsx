@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import './MatchStatistics.css';
+import { API_BASE_URL } from '../services/videoService';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -27,7 +28,7 @@ const MatchStatistics = ({ csvFileName, onClose }) => {
       setError(null);
 
       // Use the correct API endpoint (without /api prefix)
-      const response = await fetch(`http://localhost:8000/statistics/${csvFileName}`);
+      const response = await fetch(`${API_BASE_URL}/statistics/${csvFileName}`);
       console.log('Fetching statistics from:', response.url);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -57,7 +58,7 @@ const MatchStatistics = ({ csvFileName, onClose }) => {
       if (playerId) params.append('player_id', playerId);
       if (teamId) params.append('team_id', teamId);
 
-      const response = await fetch(`http://localhost:8000/statistics/${csvFileName}/heatmap?${params}`);
+      const response = await fetch(`${API_BASE_URL}/statistics/${csvFileName}/heatmap?${params}`);
       const data = await response.json();
 
       if (data.success) {
