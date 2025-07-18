@@ -20,20 +20,11 @@ from utils.gemini import analyze_video_with_statistics
 
 app = FastAPI(title="Football Analyst API")
 
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
 
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1",
-    "http://localhost:5173",  # Vite default
-    "*",  # For development, allow all origins
-]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -286,7 +277,7 @@ async def analyze_enhanced_with_statistics(request: AnalyzeRequest):
             f"Statistics loaded successfully. Summary: {statistics_data.get('summary', {})}"
         )
 
-        # Get video URL (for cloud storage, use the URL; for local, use file path)
+        # Get video URL (for cloud storage, use the URL; for local, use file path)ằ
         video_url = str(video_path)
         print(f"Analyzing video: {video_url}")
 

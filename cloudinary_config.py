@@ -31,8 +31,9 @@ class CloudinaryManager:
                 public_id=public_id,
                 folder=folder,
                 overwrite=True,
-                eager = [{"format": "mp4"}],
-                eager_async=True
+                
+                format="mp4",
+                
             )
             return {
                 "success": True,
